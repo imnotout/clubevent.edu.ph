@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Updates - ACT-CCS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="updates.css">
+</head>
+<body>
+
+    <!-- Unverified Email Banner -->
+    <div id="verifyReminderBanner" style="display:none;background:linear-gradient(135deg,#e67e22,#f39c12);color:#fff;padding:11px 20px;text-align:center;font-size:13px;font-weight:600;position:sticky;top:0;z-index:9998;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+        <i class="fas fa-exclamation-triangle"></i>
+        Your email is not verified. You cannot join Clubs or register for Events until you verify.
+        <a href="Profile.html" onclick="sessionStorage.setItem('openVerify','1')" style="color:#fff;text-decoration:underline;cursor:pointer;margin-left:8px;font-weight:700;">Verify Now &#8594;</a>
+    </div>
+<!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <marquee behavior="scroll" direction="left">Admissions Open for 2024-2026 | Apply Now!</marquee>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="Pictures/Logo.jpg" alt="ACT Logo">
+            </div>
+            <div class="institution-info">
+                <p class="subtitle">A Unit of Asian Technology Trust®</p>
+                <h1>ASIAN COLLEGE OF TECHNOLOGY</h1>
+                <p class="accreditation">Approved By ACT And CCS</p>
+            </div>
+            <div class="logo-section">
+                <img src="Pictures/ACTLogo.png" alt="ACT Secondary Logo">
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+        <nav>
+        <button class="mobile-menu-toggle" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="nav-content" id="navMenu">
+            <ul>
+                <li><a href="Page_Main2_.html">Home</a></li>
+                <li><a href="Clubs.html">Clubs</a></li>
+                <li><a href="Events.html">Event</a></li>
+                <li>
+                    <a href="#" class="active">Information <i class="fas fa-caret-down"></i></a>
+                    <div class="dropdown-content" id="infoDropdown">
+                        <a href="updates.html">Updates</a>
+                        <a href="calendar.html">Calendar</a>
+                    </div>
+                </li>
+                <li><a href="Contact.html">Contact</a></li>
+            </ul>
+            <div class="user-profile">
+                <div class="profile-trigger" onclick="toggleProfileDropdown()">
+                    <div class="profile-avatar" id="profileAvatar">U</div>
+                    <div class="profile-info">
+                        <div class="profile-name" id="profileName">Guest User</div>
+                        <div class="profile-id" id="profileId">Not logged in</div>
+                    </div>
+                    <i class="fas fa-chevron-down" style="color:rgba(255,255,255,0.7);font-size:12px;"></i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-avatar" id="dropdownAvatar">U</div>
+                        <div class="dropdown-name" id="dropdownName">Guest User</div>
+                        <div class="dropdown-email" id="dropdownEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="abccdeced8dfebced3cac6dbc7ce85c8c4c6">[email&#160;protected]</a></div>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="Profile.html" class="dropdown-item"><i class="fas fa-user"></i><span class="font">My Profile</span></a>
+                        <a href="#" class="dropdown-item"><i class="fas fa-cog"></i><span class="font">Settings</span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item logout" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>
+                <i class="fas fa-bell"></i>
+                Latest Updates
+            </h1>
+            <p>Stay informed about recent events and registrations</p>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon academic">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="academicCount">0</h3>
+                    <p>Academic Events</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon cultural">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="culturalCount">0</h3>
+                    <p>Cultural Events</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon registrations">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="registrationCount">0</h3>
+                    <p>Total Registrations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Updates Section -->
+            <div class="updates-section">
+                <div class="updates-header">
+                    <div class="updates-header-top">
+                        <h2><i class="fas fa-bell"></i> Activity Feed</h2>
+                        <button class="btn-mark-all" onclick="markAllRead()">
+                            <i class="fas fa-check-double"></i> Mark all read
+                        </button>
+                    </div>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active" data-filter="all">All</div>
+                        <div class="filter-tab" data-filter="events">Events</div>
+                        <div class="filter-tab" data-filter="registrations">My Registrations</div>
+                        <div class="filter-tab" data-filter="approvals">Approvals</div>
+                    </div>
+                </div>
+                <div class="updates-body" id="updatesBody">
+                    <!-- Updates will be populated here -->
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="upcoming-events-section">
+                <div class="upcoming-header">
+                    <h2>
+                        <i class="fas fa-star"></i>
+                        Upcoming Events
+                    </h2>
+                </div>
+                <div class="upcoming-body" id="upcomingBody">
+                    <!-- Upcoming events populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script src="notifications.js"></script>
+    <script src="updates.js"></script>
+
+    <script>
+    (function() {
+        try {
+            const u = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (u && u.role === 'student' && !u.emailVerified) {
+                const b = document.getElementById('verifyReminderBanner');
+                if (b) b.style.display = 'block';
+            }
+        } catch(e){}
+    })();
+    </script>
+</body>
+</html>
