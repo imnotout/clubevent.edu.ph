@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — ACT-CCS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',sans-serif; background:#f0f2f7; min-height:100vh; }
+
+        /* ── Top Bar ── */
+        .top-bar {
+            background: linear-gradient(135deg, #96281b 0%, #c0392b 100%);
+            color: #fff; padding: 8px 0; font-size: 13px; text-align: center;
+        }
+
+        /* ── Header ── */
+        header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,.08);
+            padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .admin-logo {
+            width: 46px; height: 46px;
+            background: linear-gradient(135deg, #c0392b, #96281b);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        }
+        .admin-logo i { font-size: 22px; color: #fff; }
+        .header-title h1 { font-size: 20px; color: #1a1a2e; font-weight: 800; }
+        .header-title p { font-size: 12px; color: #888; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .admin-name {
+            font-size: 13px; color: #555; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .admin-name i { color: #c0392b; }
+        .btn-logout {
+            padding: 8px 16px;
+            background: #fdecea; color: #c0392b;
+            border: 1px solid #f5c6c6; border-radius: 7px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+            transition: all .2s;
+        }
+        .btn-logout:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+        /* ── Tab Nav ── */
+        .tab-nav {
+            background: #fff; border-bottom: 1px solid #e8e8e8;
+            display: flex; padding: 0 32px; gap: 4px;
+        }
+        .tab-btn {
+            padding: 14px 20px; font-size: 14px; font-weight: 600;
+            color: #888; background: none; border: none;
+            border-bottom: 3px solid transparent; cursor: pointer;
+            transition: all .2s; display: flex; align-items: center; gap: 7px;
+        }
+        .tab-btn:hover { color: #c0392b; }
+        .tab-btn.active { color: #c0392b; border-bottom-color: #c0392b; }
+        .tab-badge {
+            background: #c0392b; color: #fff;
+            font-size: 10px; font-weight: 700;
+            min-width: 18px; height: 18px; border-radius: 9px;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0 4px;
+        }
+        .tab-badge.hidden { display: none; }
+
+        /* ── Container ── */
+        .container { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            gap: 16px; margin-bottom: 28px;
+        }
+        .stat-box {
+            background: #fff; border-radius: 12px;
+            padding: 20px 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06);
+            display: flex; align-items: center; gap: 14px;
+            border-left: 4px solid transparent;
+        }
+        .stat-box.pending  { border-color: #f39c12; }
+        .stat-box.approved { border-color: #27ae60; }
+        .stat-box.denied   { border-color: #c0392b; }
+        .stat-box.total    { border-color: #2c5282; }
+        .stat-box.registrations { border-color: #8e44ad; }
+        .stat-box.clickable { cursor: pointer; transition: transform .2s, box-shadow .2s; }
+        .stat-box.clickable:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+        .stat-icon {
+            width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .stat-box.pending  .stat-icon { background:#fff8e1; color:#f39c12; }
+        .stat-box.approved .stat-icon { background:#e9f7ef; color:#27ae60; }
+        .stat-box.denied   .stat-icon { background:#fdecea; color:#c0392b; }
+        .stat-box.total    .stat-icon { background:#ebf4ff; color:#2c5282; }
+        .stat-box.registrations .stat-icon { background:#f5eeff; color:#8e44ad; }
+        .stat-num { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+        .stat-lbl { font-size: 12px; color: #888; margin-top: 2px; }
+
+        /* ── Section header ── */
+        .section-head {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .section-head h2 { font-size: 17px; color: #1a1a2e; font-weight: 700;
+            display: flex; align-items: center; gap: 8px; }
+        .section-head h2 i { color: #c0392b; }
+
+        /* ── Event Cards ── */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .event-card {
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 2px 14px rgba(0,0,0,.07);
+            overflow: hidden; transition: transform .2s, box-shadow .2s;
+        }
+        .event-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,.1); }
+
+        .event-card-header {
+            padding: 18px 20px 14px;
+            background: linear-gradient(135deg, #2c5282, #1a365d);
+            color: #fff; position: relative;
+        }
+        .event-card-header.cultural { background: linear-gradient(135deg, #6b21a8, #4c1d95); }
+        .ev-type-chip {
+            display: inline-block; padding: 3px 10px;
+            border-radius: 20px; font-size: 10px; font-weight: 700;
+            letter-spacing: .5px; text-transform: uppercase;
+            background: rgba(255,255,255,.2); margin-bottom: 8px;
+        }
+        .ev-id { font-size: 11px; opacity: .7; margin-bottom: 4px; }
+        .ev-name { font-size: 16px; font-weight: 700; }
+
+        .event-card-body { padding: 16px 20px; }
+        .ev-detail {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px; color: #555; margin-bottom: 8px;
+        }
+        .ev-detail i { width: 16px; color: #c0392b; flex-shrink: 0; }
+        .ev-detail strong { color: #333; }
+
+        .ev-teacher-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #f0f4ff; color: #2c5282;
+            border: 1px solid #d0dcf0; border-radius: 6px;
+            padding: 5px 10px; font-size: 12px; font-weight: 600; margin-top: 4px;
+        }
+
+        /* ── Status badge on card ── */
+        .ev-status-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; margin-top: 10px;
+        }
+        .ev-status-badge.pending  { background:#fff8e1; color:#b7791f; border:1px solid #fde68a; }
+        .ev-status-badge.approved { background:#e9f7ef; color:#27ae60; border:1px solid #a8e6c1; }
+        .ev-status-badge.denied   { background:#fdecea; color:#c0392b; border:1px solid #f5c6c6; }
+
+        /* ── Action Buttons ── */
+        .event-card-actions {
+            padding: 14px 20px 18px;
+            border-top: 1px solid #f0f0f0;
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .btn-approve {
+            flex: 1; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer;
+            font-size: 13px; font-weight: 700;
+            background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: all .2s;
+        }
+        .btn-approve:hover { box-shadow: 0 4px 14px rgba(39,174,96,.4); transform: translateY(-1px); }
+        .btn-deny {
+            flex: 1; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer;
+            font-size: 13px; font-weight: 700;
+            background: linear-gradient(135deg, #c0392b, #96281b); color: #fff;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: all .2s;
+        }
+        .btn-deny:hover { box-shadow: 0 4px 14px rgba(192,57,43,.4); transform: translateY(-1px); }
+        .btn-delete-admin {
+            padding: 10px 14px; border-radius: 8px;
+            border: 1px solid #e0e0e0; background: #f8f8f8;
+            color: #888; cursor: pointer; font-size: 13px;
+            display: flex; align-items: center; gap: 6px; transition: all .2s;
+        }
+        .btn-delete-admin:hover { background: #fdecea; color: #c0392b; border-color: #f5c6c6; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #bbb;
+            grid-column: 1 / -1;
+        }
+        .empty-state i { font-size: 48px; display: block; margin-bottom: 14px; }
+        .empty-state h3 { font-size: 18px; color: #999; margin-bottom: 8px; }
+        .empty-state p { font-size: 13px; }
+
+        /* ── Tab content panels ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Deny reason modal ── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.5); z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 14px;
+            padding: 32px; width: 90%; max-width: 440px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
+            animation: modalIn .3s ease;
+        }
+        @keyframes modalIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+        .modal-box h3 { font-size: 18px; color: #1a1a2e; margin-bottom: 6px; }
+        .modal-box p { font-size: 13px; color: #888; margin-bottom: 18px; }
+        .modal-box textarea {
+            width: 100%; padding: 12px; border: 2px solid #e5e5e5;
+            border-radius: 9px; font-size: 13px; resize: vertical;
+            min-height: 100px; font-family: inherit;
+        }
+        .modal-box textarea:focus { outline: none; border-color: #c0392b; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .modal-actions button { flex: 1; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 700; }
+        .btn-modal-cancel { background: #f5f5f5; color: #666; }
+        .btn-modal-deny   { background: #c0392b; color: #fff; }
+
+
+        /* ── Toast ── */
+        .admin-toast {
+            position: fixed; bottom: 24px; right: 24px;
+            background: #1a1a2e; color: #fff;
+            padding: 14px 20px; border-radius: 10px;
+            font-size: 14px; font-weight: 600;
+            box-shadow: 0 6px 24px rgba(0,0,0,.3);
+            display: flex; align-items: center; gap: 10px;
+            transform: translateY(80px); opacity: 0;
+            transition: all .4s cubic-bezier(.22,.61,.36,1);
+            z-index: 99999;
+        }
+        .admin-toast.show { transform: translateY(0); opacity: 1; }
+        .admin-toast.green { border-left: 4px solid #27ae60; }
+        .admin-toast.red   { border-left: 4px solid #c0392b; }
+
+        @media(max-width:768px) {
+            .stats-bar { grid-template-columns: repeat(2,1fr); }
+            header { padding: 12px 16px; }
+            .tab-nav { padding: 0 16px; }
+            .container { padding: 16px; }
+        }
+
+        /* ── Users Panel ── */
+        .users-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+        }
+        .users-search {
+            padding: 10px 14px; border: 2px solid #e5e5e5; border-radius: 9px;
+            font-size: 13px; width: 260px; transition: border-color .2s;
+        }
+        .users-search:focus { outline: none; border-color: #8e44ad; }
+        .role-filter-tabs { display: flex; gap: 6px; }
+        .role-tab {
+            padding: 8px 16px; border-radius: 20px; border: 2px solid #e5e5e5;
+            font-size: 12px; font-weight: 700; cursor: pointer; background: #fff;
+            color: #888; transition: all .2s;
+        }
+        .role-tab.active.all      { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+        .role-tab.active.student  { background: #2c5282; color: #fff; border-color: #2c5282; }
+        .role-tab.active.teacher  { background: #b8860b; color: #fff; border-color: #b8860b; }
+
+        .users-table-wrap { overflow-x: auto; }
+        .users-table {
+            width: 100%; border-collapse: collapse; font-size: 13px;
+        }
+        .users-table th {
+            background: #f8f9fb; padding: 12px 16px; text-align: left;
+            font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase;
+            letter-spacing: .5px; border-bottom: 2px solid #eee;
+        }
+        .users-table td {
+            padding: 13px 16px; border-bottom: 1px solid #f5f5f5; color: #333;
+            vertical-align: middle;
+        }
+        .users-table tr:hover td { background: #fafbff; }
+        .user-name-link {
+            color: #2c5282; font-weight: 700; cursor: pointer;
+            text-decoration: none; transition: color .2s;
+        }
+        .user-name-link:hover { color: #c0392b; text-decoration: underline; }
+        .role-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+        }
+        .role-chip.student { background: #ebf4ff; color: #2c5282; }
+        .role-chip.teacher { background: #fff8e1; color: #b8860b; }
+        .btn-delete-user {
+            padding: 6px 12px; border-radius: 7px;
+            background: #fdecea; color: #c0392b;
+            border: 1px solid #f5c6c6; font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: all .2s;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-delete-user:hover { background: #c0392b; color: #fff; }
+
+        /* ── User Detail Modal ── */
+        .user-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.5); z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .user-modal-overlay.open { display: flex; }
+        .user-modal-box {
+            background: #fff; border-radius: 16px;
+            width: 90%; max-width: 520px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
+            overflow: hidden; animation: modalIn .3s ease;
+        }
+        .user-modal-header {
+            padding: 24px 28px 18px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .user-modal-header.student { background: linear-gradient(135deg, #2c5282, #1a365d); }
+        .user-modal-header.teacher { background: linear-gradient(135deg, #b8860b, #856404); }
+        .user-avatar-lg {
+            width: 54px; height: 54px; border-radius: 50%;
+            background: rgba(255,255,255,.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 800; color: #fff;
+            flex-shrink: 0;
+        }
+        .user-modal-name { color: #fff; }
+        .user-modal-name h3 { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+        .user-modal-name p { font-size: 12px; opacity: .8; }
+        .user-modal-body { padding: 22px 28px; }
+        .um-row {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 10px 0; border-bottom: 1px solid #f5f5f5; gap: 20px;
+        }
+        .um-row:last-child { border-bottom: none; }
+        .um-label { font-size: 12px; color: #888; font-weight: 600; min-width: 130px; }
+        .um-val { font-size: 13px; color: #1a1a2e; font-weight: 600; text-align: right; word-break: break-all; }
+        .user-modal-footer {
+            padding: 16px 28px; border-top: 1px solid #f0f0f0;
+            display: flex; justify-content: flex-end; gap: 10px;
+        }
+        .btn-um-close { padding: 10px 20px; border-radius: 8px; border: 1px solid #e0e0e0; background: #f5f5f5; color: #666; font-weight: 700; cursor: pointer; font-size: 13px; }
+        .btn-um-delete { padding: 10px 20px; border-radius: 8px; border: none; background: #c0392b; color: #fff; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .btn-um-delete:hover { background: #96281b; }
+
+        /* ── Clubs Management Panel ── */
+        .clubs-mgmt-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px; margin-top:20px; }
+        .club-mgmt-card { background:#fff; border-radius:14px; padding:22px; border:1px solid #e8edf5; box-shadow:0 2px 10px rgba(0,0,0,.07); }
+        .club-mgmt-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+        .club-mgmt-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+        .club-mgmt-icon.rgs        { background:#f0edff; color:#764ba2; }
+        .club-mgmt-icon.sports     { background:#e6fff5; color:#11998e; }
+        .club-mgmt-icon.multimedia { background:#fff8e6; color:#f7971e; }
+        .club-mgmt-name { font-size:16px; font-weight:700; color:#1a1a2e; }
+        .club-mgmt-sub  { font-size:12px; color:#888; margin-top:2px; }
+        .club-teacher-row { display:flex; align-items:center; gap:10px; padding:12px; background:#f8f9ff; border-radius:10px; border:1px solid #e8edf5; margin-bottom:12px; }
+        .club-teacher-row .teacher-info { flex:1; }
+        .club-teacher-row .t-name { font-size:13px; font-weight:700; color:#1a1a2e; }
+        .club-teacher-row .t-id   { font-size:11px; color:#888; }
+        .btn-assign-teacher { padding:7px 14px; border:none; border-radius:8px; background:linear-gradient(135deg,#2c5282,#0c82a0); color:#fff; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .btn-assign-teacher:hover { transform:translateY(-1px); box-shadow:0 3px 10px rgba(44,82,130,.4); }
+        .btn-remove-teacher { padding:7px 14px; border:none; border-radius:8px; background:#fee2e2; color:#b91c1c; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .btn-remove-teacher:hover { background:#fecaca; }
+        .clubs-member-count { font-size:12px; color:#666; display:flex; align-items:center; gap:6px; }
+
+        /* ── Clubs Management Panel ── */
+        .clubs-mgmt-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px; margin-top:20px; }
+        .club-mgmt-card { background:#fff; border-radius:14px; padding:22px; border:1px solid #e8edf5; box-shadow:0 2px 10px rgba(0,0,0,.07); }
+        .club-mgmt-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+        .club-mgmt-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+        .club-mgmt-icon.rgs        { background:#f0edff; color:#764ba2; }
+        .club-mgmt-icon.sports     { background:#e6fff5; color:#11998e; }
+        .club-mgmt-icon.multimedia { background:#fff8e6; color:#f7971e; }
+        .club-mgmt-name { font-size:16px; font-weight:700; color:#1a1a2e; }
+        .club-mgmt-sub  { font-size:12px; color:#888; margin-top:2px; }
+        .club-teacher-row { display:flex; align-items:center; gap:10px; padding:12px; background:#f8f9ff; border-radius:10px; border:1px solid #e8edf5; margin-bottom:12px; }
+        .club-teacher-row .teacher-info { flex:1; }
+        .club-teacher-row .t-name { font-size:13px; font-weight:700; color:#1a1a2e; }
+        .club-teacher-row .t-id   { font-size:11px; color:#888; }
+        .btn-assign-teacher { padding:7px 14px; border:none; border-radius:8px; background:linear-gradient(135deg,#2c5282,#0c82a0); color:#fff; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .btn-assign-teacher:hover { transform:translateY(-1px); box-shadow:0 3px 10px rgba(44,82,130,.4); }
+        .btn-remove-teacher { padding:7px 14px; border:none; border-radius:8px; background:#fee2e2; color:#b91c1c; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .btn-remove-teacher:hover { background:#fecaca; }
+        .clubs-member-count { font-size:12px; color:#666; display:flex; align-items:center; gap:6px; }
+
+        /* ── Generate Teacher Modal ── */
+        .fp-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:10000; align-items:center; justify-content:center; }
+        .fp-overlay.open { display:flex; }
+        .fp-box { background:#fff; border-radius:16px; padding:32px 28px; width:100%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,.3); animation:fpPop .3s cubic-bezier(.22,.61,.36,1); position:relative; box-sizing:border-box; }
+        @keyframes fpPop { from{transform:scale(.88);opacity:0} to{transform:scale(1);opacity:1} }
+        .fp-box h3 { font-size:19px; font-weight:700; color:#1a1a2e; margin:0 0 6px; }
+        .fp-box p  { font-size:13px; color:#888; margin:0 0 18px; line-height:1.5; }
+        .fp-step         { display:none; }
+        .fp-step.active  { display:block; }
+        .fp-input { display:block; width:100%; padding:12px 14px; border:2px solid #e0e0e0; border-radius:10px; font-size:14px; font-family:inherit; box-sizing:border-box; margin-bottom:12px; transition:border-color .2s; }
+        .fp-input:focus { outline:none; border-color:#2c5282; }
+        .fp-btn { display:block; width:100%; padding:13px; border:none; border-radius:10px; background:linear-gradient(135deg,#2c5282,#0c82a0); color:#fff; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:8px; transition:all .2s; text-align:center; }
+        .fp-btn:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(44,82,130,.4); }
+        .fp-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; box-shadow:none; }
+        .fp-btn-ghost { display:block; width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:10px; background:transparent; color:#888; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; text-align:center; }
+        .fp-btn-ghost:hover { border-color:#2c5282; color:#2c5282; }
+        .fp-close { position:absolute; top:14px; right:16px; background:none; border:none; font-size:22px; color:#bbb; cursor:pointer; line-height:1; }
+        .fp-close:hover { color:#555; }
+        .fp-error { color:#e53e3e; font-size:12px; margin-bottom:10px; display:none; }
+        .fp-error.show { display:block; }
+
+
+        .teacher-card-clickable {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08);
+            border: 1px solid #e8ecf0;
+            cursor: pointer;
+            transition: box-shadow .2s, transform .2s;
+        }
+        .teacher-card-clickable:hover {
+            box-shadow: 0 6px 20px rgba(44,82,130,.18);
+            transform: translateY(-2px);
+            border-color: #2c5282;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">🔒 Dean's Admin Portal — ACT-CCS | Restricted Access</div>
+
+    <header>
+        <div class="header-left">
+            <div class="admin-logo"><i class="fas fa-user-shield"></i></div>
+            <div class="header-title">
+                <h1>Admin Dashboard</h1>
+                <p>Event Approval Management</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="admin-name"><i class="fas fa-user-circle"></i> Dean Admin</div>
+            <button class="btn-logout" onclick="adminLogout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- Tab Nav -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('pending')" id="tabPending">
+            <i class="fas fa-clock"></i> Pending Approval
+            <span class="tab-badge" id="pendingBadge">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('approved')" id="tabApproved">
+            <i class="fas fa-check-circle"></i> Approved
+            <span class="tab-badge hidden" id="approvedBadge">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('denied')" id="tabDenied">
+            <i class="fas fa-times-circle"></i> Denied
+            <span class="tab-badge hidden" id="deniedBadge">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('all')" id="tabAll">
+            <i class="fas fa-list"></i> All Events
+        </button>
+        <button class="tab-btn" onclick="switchTab('users')" id="tabUsers">
+            <i class="fas fa-users"></i> Users
+        </button>
+        <button class="tab-btn" onclick="switchTab('clubs')" id="tabClubs">
+            <i class="fas fa-shield-alt"></i> Clubs
+        </button>
+        <button class="tab-btn" onclick="switchTab('teachers')" id="tabTeachers">
+            <i class="fas fa-chalkboard-teacher"></i> Teachers
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-box pending">
+                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                <div><div class="stat-num" id="statPending">0</div><div class="stat-lbl">Pending Approval</div></div>
+            </div>
+            <div class="stat-box approved">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div><div class="stat-num" id="statApproved">0</div><div class="stat-lbl">Approved Events</div></div>
+            </div>
+            <div class="stat-box denied">
+                <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                <div><div class="stat-num" id="statDenied">0</div><div class="stat-lbl">Denied Events</div></div>
+            </div>
+            <div class="stat-box total">
+                <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total Events</div></div>
+            </div>
+            <div class="stat-box registrations clickable" onclick="switchTab('users')" title="Click to view all users">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div>
+                    <div class="stat-num" id="statUsers">0</div>
+                    <div class="stat-lbl">Total Registrations <i class="fas fa-arrow-right" style="font-size:10px;margin-left:4px;opacity:.6;"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Tab -->
+        <div class="tab-panel active" id="panelPending">
+            <div class="section-head">
+                <h2><i class="fas fa-clock"></i> Events Awaiting Approval</h2>
+            </div>
+            <div class="events-grid" id="gridPending"></div>
+        </div>
+
+        <!-- Approved Tab -->
+        <div class="tab-panel" id="panelApproved">
+            <div class="section-head">
+                <h2><i class="fas fa-check-circle"></i> Approved Events</h2>
+            </div>
+            <div class="events-grid" id="gridApproved"></div>
+        </div>
+
+        <!-- Denied Tab -->
+        <div class="tab-panel" id="panelDenied">
+            <div class="section-head">
+                <h2><i class="fas fa-times-circle"></i> Denied Events</h2>
+            </div>
+            <div class="events-grid" id="gridDenied"></div>
+        </div>
+
+        <!-- All Tab -->
+        <div class="tab-panel" id="panelAll">
+            <div class="section-head">
+                <h2><i class="fas fa-list"></i> All Events</h2>
+            </div>
+            <div class="events-grid" id="gridAll"></div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab-panel" id="panelUsers">
+            <div class="section-head">
+                <h2><i class="fas fa-users"></i> Registered Users</h2>
+            </div>
+            <div class="users-toolbar">
+                <div class="role-filter-tabs">
+                    <button class="role-tab active all" onclick="filterUsers('all', this)">All</button>
+                    <button class="role-tab" onclick="filterUsers('student', this)">🎓 Students</button>
+                    <button class="role-tab" onclick="filterUsers('teacher', this)">👩‍🏫 Teachers</button>
+                </div>
+                <input class="users-search" type="text" id="userSearch"
+                    placeholder="Search name, ID, email..." oninput="renderUsersTable()">
+            </div>
+            <div class="users-table-wrap">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>ID Number</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Registered</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deny Reason Modal -->
+    <div class="modal-overlay" id="denyModal">
+        <div class="modal-box">
+            <h3><i class="fas fa-times-circle" style="color:#c0392b;margin-right:8px;"></i>Deny Event</h3>
+            <p>Provide a reason for denial (optional). The teacher will be notified.</p>
+            <textarea id="denyReason" placeholder="e.g. Schedule conflict, incomplete details, etc."></textarea>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" onclick="closeDenyModal()">Cancel</button>
+                <button class="btn-modal-deny" onclick="confirmDeny()"><i class="fas fa-times"></i> Confirm Deny</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Detail Modal -->
+        <!-- Clubs Management Tab -->
+        <div class="tab-panel" id="panelClubs">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <h2><i class="fas fa-shield-alt" style="color:#2c5282;"></i> Club Management</h2>
+            </div>
+            <p style="color:#666;font-size:13.5px;margin-bottom:4px;">Assign or remove teachers responsible for each club. The assigned teacher can then manage officers and post club events.</p>
+            <div class="clubs-mgmt-grid" id="clubsMgmtGrid">
+                <div style="text-align:center;padding:40px;color:#bbb;grid-column:1/-1;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teachers Management Tab -->
+        <div class="tab-panel" id="panelTeachers">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <h2 style="margin:0;color:#1a1a2e;font-size:20px;"><i class="fas fa-chalkboard-teacher" style="color:#2c5282;margin-right:8px;"></i>Teacher Accounts</h2>
+                    <p style="margin:4px 0 0;color:#888;font-size:13px;">Generate and manage teacher accounts. Share credentials with teachers directly.</p>
+                </div>
+                <button onclick="openGenerateTeacherModal()" style="padding:11px 22px;background:linear-gradient(135deg,#2c5282,#0c82a0);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-plus-circle"></i> Generate Teacher Account
+                </button>
+            </div>
+            <div id="teacherAccountsList">
+                <div style="text-align:center;padding:40px;color:#aaa;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><p>Loading...</p></div>
+            </div>
+        </div>
+
+        <!-- Generate Teacher Modal -->
+        <div class="fp-overlay" id="generateTeacherOverlay">
+            <div class="fp-box" style="max-width:460px;">
+                <button class="fp-close" onclick="closeGenerateTeacherModal()">&times;</button>
+                <div class="fp-step active" id="gtStep1">
+                    <h3><i class="fas fa-user-plus" style="color:#2c5282;margin-right:8px;"></i>Generate Teacher Account</h3>
+                    <p>Fill in the teacher's details. A Teacher ID and temporary password will be auto-generated.</p>
+                    <input class="fp-input" type="text" id="gtName" placeholder="Full Name (e.g. Juan dela Cruz)" />
+                    <input class="fp-input" type="email" id="gtEmail" placeholder="Email Address" />
+                    <div class="fp-error" id="gtErr"></div>
+                    <button class="fp-btn" onclick="generateTeacherAccount()"><i class="fas fa-magic"></i> Generate Account</button>
+                    <button class="fp-btn-ghost" onclick="closeGenerateTeacherModal()">Cancel</button>
+                </div>
+                <div class="fp-step" id="gtStep2">
+                    <div style="text-align:center;font-size:48px;margin-bottom:8px;">🎉</div>
+                    <h3 style="text-align:center;">Account Generated!</h3>
+                    <p style="text-align:center;">Share these credentials with the teacher. They can update their info after logging in.</p>
+                    <div id="gtCredentials" style="background:#f0f4ff;border:2px dashed #2c5282;border-radius:12px;padding:20px;margin:16px 0;font-family:monospace;font-size:14px;line-height:2.2;word-break:break-all;"></div>
+                    <button class="fp-btn" onclick="copyTeacherCredentials()" id="gtCopyBtn"><i class="fas fa-copy"></i> Copy Credentials</button>
+                    <button class="fp-btn-ghost" onclick="closeGenerateTeacherModal()">Done</button>
+                </div>
+            </div>
+        </div>
+
+    <div class="user-modal-overlay" id="userModal">
+        <div class="user-modal-box">
+            <div class="user-modal-header" id="userModalHeader">
+                <div class="user-avatar-lg" id="userModalAvatar">U</div>
+                <div class="user-modal-name">
+                    <h3 id="userModalName">Name</h3>
+                    <p id="userModalSubtitle">ID · Role</p>
+                </div>
+            </div>
+            <div class="user-modal-body" id="userModalBody"></div>
+            <div class="user-modal-footer">
+                <button class="btn-um-close" onclick="closeUserModal()">Close</button>
+                <button class="btn-um-delete" id="userModalDeleteBtn"><i class="fas fa-trash"></i> Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="admin-toast" id="adminToast">
+        <i class="fas fa-check-circle" id="toastIcon"></i>
+        <span id="toastMsg">Done</span>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="notifications.js"></script>
+    <script>
+        let events = [];
+        let pendingDenyId = null;
+        let currentTab = 'pending';
+
+        /* ── Auth guard ── */
+        function requireAdmin() {
+            try {
+                const u = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!u || u.role !== 'admin') {
+                    window.location.href = 'admin_login.html';
+                }
+            } catch(e) { window.location.href = 'admin_login.html'; }
+        }
+
+        function adminLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'admin_login.html';
+            }
+        }
+
+        /* ── Load events ── */
+        async function loadEvents() {
+            try {
+                const rows = await DB.getAllEvents();
+                events = rows.map(r => DB.rowToEvent(r));
+            } catch(e) { events = []; console.error('loadEvents:', e); }
+        }
+
+        function saveEvents() { /* no-op: DB writes happen per operation */ }
+
+        /* ── Helpers ── */
+        function formatDate(d) {
+            return new Date(d).toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+        }
+        function formatTime(t) {
+            const [h,m] = t.split(':'); const hr = parseInt(h);
+            return `${hr%12||12}:${m} ${hr>=12?'PM':'AM'}`;
+        }
+        async function getTeacherName(teacherId) {
+            if (!teacherId) return 'Unknown';
+            try {
+                const u = await DB.getUser(teacherId);
+                return u ? u.name : teacherId;
+            } catch { return teacherId; }
+        }
+
+        /* ── Stats ── */
+        function updateStats() {
+            const pending  = events.filter(e => !e.approvalStatus || e.approvalStatus === 'pending').length;
+            const approved = events.filter(e => e.approvalStatus === 'approved').length;
+            const denied   = events.filter(e => e.approvalStatus === 'denied').length;
+            const userCount = _cachedUsers.length;
+
+            document.getElementById('statPending').textContent  = pending;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statDenied').textContent   = denied;
+            document.getElementById('statTotal').textContent    = events.length;
+            document.getElementById('statUsers').textContent    = userCount;
+
+            document.getElementById('pendingBadge').textContent = pending;
+            document.getElementById('pendingBadge').classList.toggle('hidden', pending === 0);
+            document.getElementById('approvedBadge').textContent = approved;
+            document.getElementById('approvedBadge').classList.toggle('hidden', approved === 0);
+            document.getElementById('deniedBadge').textContent = denied;
+            document.getElementById('deniedBadge').classList.toggle('hidden', denied === 0);
+        }
+
+        /* ── Render grid ── */
+        async function renderGrid(gridId, evList) {
+            const grid = document.getElementById(gridId);
+            if (evList.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No events here</h3><p>Nothing to show in this category.</p></div>`;
+                return;
+            }
+            // Pre-resolve all creator names before rendering
+            const names = await Promise.all(evList.map(ev => ev.createdBy ? getTeacherName(ev.createdBy) : Promise.resolve('Unknown')));
+            grid.innerHTML = evList.map((ev, i) => buildCard(ev, names[i])).join('');
+        }
+
+        function buildCard(ev, teacherName) {
+            const status = ev.approvalStatus || 'pending';
+            const isCultural = ev.type === 'cultural';
+            teacherName = teacherName || ev.createdBy || 'Unknown';
+
+            let statusBadge = '';
+            if (status === 'pending')  statusBadge = `<span class="ev-status-badge pending"><i class="fas fa-hourglass-half"></i> Waiting for Approval</span>`;
+            if (status === 'approved') statusBadge = `<span class="ev-status-badge approved"><i class="fas fa-check-circle"></i> Approved</span>`;
+            if (status === 'denied')   statusBadge = `<span class="ev-status-badge denied"><i class="fas fa-times-circle"></i> Denied${ev.denyReason ? ' — ' + ev.denyReason : ''}</span>`;
+
+            // Buttons by status
+            let actionBtns = '';
+            if (status === 'pending') {
+                actionBtns = `
+                    <button class="btn-approve" onclick="approveEvent('${ev.id}')"><i class="fas fa-check"></i> Approve</button>
+                    <button class="btn-deny"    onclick="openDenyModal('${ev.id}')"><i class="fas fa-times"></i> Deny</button>
+                    <button class="btn-delete-admin" onclick="adminDeleteEvent('${ev.id}')" title="Delete"><i class="fas fa-trash"></i></button>`;
+            } else if (status === 'approved') {
+                // Admin only has Delete on approved events — NO edit
+                actionBtns = `<button class="btn-delete-admin" style="flex:1;" onclick="adminDeleteEvent('${ev.id}')"><i class="fas fa-trash"></i> Delete Event</button>`;
+            } else if (status === 'denied') {
+                actionBtns = `
+                    <button class="btn-approve" onclick="approveEvent('${ev.id}')"><i class="fas fa-check"></i> Re-Approve</button>
+                    <button class="btn-delete-admin" onclick="adminDeleteEvent('${ev.id}')" title="Delete"><i class="fas fa-trash"></i></button>`;
+            }
+
+            return `
+            <div class="event-card" id="card_${ev.id}">
+                <div class="event-card-header ${isCultural ? 'cultural' : ''}">
+                    <div class="ev-type-chip">${isCultural ? 'Cultural' : 'Academic'}</div>
+                    <div class="ev-id">ID: ${ev.id}</div>
+                    <div class="ev-name">${ev.name}</div>
+                </div>
+                <div class="event-card-body">
+                    <div class="ev-detail"><i class="fas fa-calendar-alt"></i><div><strong>Start:</strong> ${formatDate(ev.startDate)}</div></div>
+                    <div class="ev-detail"><i class="fas fa-calendar-check"></i><div><strong>End:</strong> ${formatDate(ev.endDate)}</div></div>
+                    <div class="ev-detail"><i class="fas fa-clock"></i><div>${formatTime(ev.startTime)} – ${formatTime(ev.endTime)}</div></div>
+                    <div class="ev-detail"><i class="fas fa-map-marker-alt"></i><div>${ev.venue}</div></div>
+                    <div class="ev-detail"><i class="fas fa-user-edit"></i>
+                        <div class="ev-teacher-chip"><i class="fas fa-chalkboard-teacher"></i> ${teacherName}</div>
+                    </div>
+                    ${statusBadge}
+                </div>
+                <div class="event-card-actions">${actionBtns}</div>
+            </div>`;
+        }
+
+        /* ── Render all tabs ── */
+        async function refreshAll() {
+            await loadEvents();
+            await getUsers();
+            updateStats();
+            const pending  = events.filter(e => !e.approvalStatus || e.approvalStatus === 'pending');
+            const approved = events.filter(e => e.approvalStatus === 'approved');
+            const denied   = events.filter(e => e.approvalStatus === 'denied');
+            renderGrid('gridPending',  pending);
+            renderGrid('gridApproved', approved);
+            renderGrid('gridDenied',   denied);
+            renderGrid('gridAll',      events);
+            if (currentTab === 'users') renderUsersTable();
+        }
+        function renderAll() { refreshAll(); }
+
+        /* ── Switch tab ── */
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabIds = ['pending','approved','denied','all','users','clubs','teachers'];
+            tabIds.forEach(t => {
+                const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+                const panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (btn) btn.classList.toggle('active', t === tab);
+                if (panel) panel.classList.toggle('active', t === tab);
+            });
+            if (tab === 'users')    renderUsersTable();
+            if (tab === 'clubs')    renderClubsMgmt();
+            if (tab === 'teachers') renderTeacherAccounts();
+        }
+
+        /* ── Approve ── */
+        async function approveEvent(eventId) {
+            const ev = events.find(e => e.id === eventId);
+            if (!ev) return;
+            try {
+                await DB.approveEvent(eventId);
+                await Notifications.onEventApproved(ev);
+                showToast('green', '✅ Event Approved & Published!');
+                await refreshAll();
+            } catch(err) { alert('Failed to approve event.'); console.error(err); }
+        }
+
+        /* ── Deny flow ── */
+        function openDenyModal(eventId) {
+            pendingDenyId = eventId;
+            document.getElementById('denyReason').value = '';
+            document.getElementById('denyModal').classList.add('open');
+        }
+        function closeDenyModal() {
+            document.getElementById('denyModal').classList.remove('open');
+            pendingDenyId = null;
+        }
+        async function confirmDeny() {
+            if (!pendingDenyId) return;
+            const ev = events.find(e => e.id === pendingDenyId);
+            if (!ev) { closeDenyModal(); return; }
+            const reason = document.getElementById('denyReason').value.trim();
+            try {
+                await DB.denyEvent(pendingDenyId, reason);
+                ev.denyReason = reason;
+                await Notifications.onEventDenied(ev);
+                closeDenyModal();
+                showToast('red', '❌ Event Denied. Teacher has been notified.');
+                await refreshAll();
+            } catch(err) { alert('Failed to deny event.'); console.error(err); }
+        }
+
+        /* ── Users state ── */
+        let usersRoleFilter = 'all';
+
+        let _cachedUsers = [];
+        async function getUsers() {
+            try { _cachedUsers = await DB.getAllUsers(); return _cachedUsers; }
+            catch { return []; }
+        }
+
+        function filterUsers(role, btn) {
+            usersRoleFilter = role;
+            document.querySelectorAll('.role-tab').forEach(b => {
+                b.className = 'role-tab';
+            });
+            btn.className = 'role-tab active ' + role;
+            renderUsersTable();
+        }
+
+        function renderUsersTable() {
+            const users = _cachedUsers;
+            const search = (document.getElementById('userSearch')?.value || '').toLowerCase();
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+
+            let list = users.map(u => ({ ...u, idNumber: u.id_number || u.idNumber }));
+
+            // Role filter
+            if (usersRoleFilter !== 'all') list = list.filter(u => u.role === usersRoleFilter);
+
+            // Search filter
+            if (search) list = list.filter(u =>
+                u.name?.toLowerCase().includes(search) ||
+                u.idNumber?.toLowerCase().includes(search) ||
+                u.email?.toLowerCase().includes(search)
+            );
+
+            // Update stat count
+            document.getElementById('statUsers').textContent = _cachedUsers.length;
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#bbb;">
+                    <i class="fas fa-users-slash" style="font-size:30px;display:block;margin-bottom:10px;"></i>
+                    No users found</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map((u, i) => {
+                const roleChip = u.role === 'teacher'
+                    ? `<span class="role-chip teacher"><i class="fas fa-chalkboard-teacher"></i> Teacher</span>`
+                    : `<span class="role-chip student"><i class="fas fa-graduation-cap"></i> Student</span>`;
+                const rawDate = u.signupDate || u.signup_date;
+                const date = rawDate
+                    ? new Date(rawDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+                    : '—';
+                const uid  = u.idNumber || u.id_number;
+                const uname = u.name || '—';
+                const uemail = u.email || '—';
+                return `<tr>
+                    <td>${i + 1}</td>
+                    <td><span class="user-name-link" onclick="viewUserDetail('${uid}')">${uname}</span></td>
+                    <td>${uid}</td>
+                    <td>${uemail}</td>
+                    <td>${roleChip}</td>
+                    <td>${date}</td>
+                    <td><button class="btn-delete-user" onclick="deleteUser('${u.idNumber}', '${u.name.replace(/'/g,'\\\'')}')"
+                        ><i class="fas fa-trash"></i> Delete</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function viewUserDetail(userId) {
+            const u = _cachedUsers.find(u => (u.id_number || u.idNumber) === userId);
+            if (!u) return;
+            const normId = u.id_number || u.idNumber;
+
+            const initials = u.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            const isTeacher = u.role === 'teacher';
+
+            // Event registrations for this user
+            let userRegs = [];
+            try { userRegs = (await DB.getRegistrationsByStudent(normId)).map(r => DB.rowToRegistration(r)); } catch(e) {}
+
+            // Events created by this user (if teacher)
+            const createdEvents = events.filter(e => e.createdBy === normId);
+
+            const date = u.signupDate
+                ? new Date(u.signupDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
+                : 'Unknown';
+
+            document.getElementById('userModalAvatar').textContent = initials;
+            document.getElementById('userModalName').textContent = u.name;
+            document.getElementById('userModalSubtitle').textContent = userId + ' · ' + (isTeacher ? 'Teacher' : 'Student');
+            document.getElementById('userModalHeader').className = 'user-modal-header ' + u.role;
+
+            let extraRows = '';
+            if (!isTeacher) {
+                extraRows = `
+                    <div class="um-row">
+                        <span class="um-label">Events Registered</span>
+                        <span class="um-val">${userRegs.length} event${userRegs.length !== 1 ? 's' : ''}</span>
+                    </div>`;
+                if (userRegs.length > 0) {
+                    extraRows += `<div class="um-row">
+                        <span class="um-label">Registered Events</span>
+                        <span class="um-val" style="text-align:right;font-size:12px;">${
+                            userRegs.slice(0,5).map(r => '• ' + r.eventName).join('<br>')
+                            + (userRegs.length > 5 ? `<br>+${userRegs.length - 5} more` : '')
+                        }</span>
+                    </div>`;
+                }
+            } else {
+                extraRows = `
+                    <div class="um-row">
+                        <span class="um-label">Events Created</span>
+                        <span class="um-val">${createdEvents.length} event${createdEvents.length !== 1 ? 's' : ''}</span>
+                    </div>`;
+                if (createdEvents.length > 0) {
+                    extraRows += `<div class="um-row">
+                        <span class="um-label">Created Events</span>
+                        <span class="um-val" style="text-align:right;font-size:12px;">${
+                            createdEvents.slice(0,5).map(e => '• ' + e.name).join('<br>')
+                            + (createdEvents.length > 5 ? `<br>+${createdEvents.length - 5} more` : '')
+                        }</span>
+                    </div>`;
+                }
+            }
+
+            document.getElementById('userModalBody').innerHTML = `
+                <div class="um-row">
+                    <span class="um-label">Full Name</span>
+                    <span class="um-val">${u.name}</span>
+                </div>
+                <div class="um-row">
+                    <span class="um-label">ID Number</span>
+                    <span class="um-val">${userId}</span>
+                </div>
+                <div class="um-row">
+                    <span class="um-label">Email</span>
+                    <span class="um-val">${u.email || '—'}</span>
+                </div>
+                <div class="um-row">
+                    <span class="um-label">Role</span>
+                    <span class="um-val">${isTeacher ? '👩‍🏫 Teacher' : '🎓 Student'}</span>
+                </div>
+                <div class="um-row">
+                    <span class="um-label">Member Since</span>
+                    <span class="um-val">${date}</span>
+                </div>
+                ${extraRows}
+            `;
+
+            // Wire delete button
+            const delBtn = document.getElementById('userModalDeleteBtn');
+            delBtn.onclick = () => deleteUser(userId, u.name, true);
+
+            document.getElementById('userModal').classList.add('open');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('open');
+        }
+
+        async function deleteUser(userId, userName, fromModal = false) {
+            if (!confirm(`Delete account for "${userName}"?\n\nThis will permanently remove their account. This cannot be undone.`)) return;
+            try {
+                await DB.deleteUser(userId);
+                // If this user is currently logged in, log them out
+                try {
+                    const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                    if (cu && cu.idNumber === userId) localStorage.removeItem('currentUser');
+                } catch(e) {}
+                if (fromModal) closeUserModal();
+                showToast('red', `🗑️ Account for "${userName}" has been deleted.`);
+                await refreshAll();
+            } catch(err) {
+                alert('Failed to delete user. Please try again.');
+                console.error(err);
+            }
+        }
+
+        /* ── Admin Delete ── */
+        async function adminDeleteEvent(eventId) {
+            const ev = events.find(e => e.id === eventId);
+            if (!ev) return;
+            if (!confirm(`Delete "${ev.name}"? This cannot be undone.`)) return;
+            try {
+                await DB.deleteEvent(eventId);
+                await Notifications.onEventDeleted(ev, 'admin');
+                showToast('red', '🗑️ Event deleted. Affected users notified.');
+                await refreshAll();
+            } catch(err) { alert('Failed to delete event.'); console.error(err); }
+        }
+
+
+        /* ═══════════ CLUBS MANAGEMENT ═══════════ */
+        const CLUB_DEFS = {
+            rgs:        { name:'Responsible Gamers Society', icon:'fa-gamepad',     tag:'Games Club' },
+            sports:     { name:'Sports Club',                icon:'fa-running',     tag:'Sports Club' },
+            multimedia: { name:'Multimedia Club',            icon:'fa-photo-video', tag:'Multimedia Club' }
+        };
+
+        let _clubTeachers = [];
+        let _clubMembers  = [];
+
+        async function renderClubsMgmt() {
+            const grid = document.getElementById('clubsMgmtGrid');
+            grid.innerHTML = '<div style="text-align:center;padding:40px;color:#bbb;grid-column:1/-1;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i></div>';
+            try {
+                _clubTeachers = await DB.getAllClubTeachers();
+                _clubMembers  = await DB.getAllClubRegistrations();
+            } catch(e) { _clubTeachers=[]; _clubMembers=[]; }
+
+            // Get teacher list for the select
+            const teachers = _cachedUsers.filter(u => u.role === 'teacher');
+
+            grid.innerHTML = Object.entries(CLUB_DEFS).map(([cid, club]) => {
+                const teacherRow = _clubTeachers.find(t => t.club_id === cid);
+                const teacher    = teacherRow ? _cachedUsers.find(u => (u.id_number||u.idNumber) === teacherRow.teacher_id) : null;
+                const memberCount = _clubMembers.filter(r => r.club_id === cid).length;
+
+                const teacherBlock = teacher
+                    ? `<div class="club-teacher-row">
+                            <i class="fas fa-chalkboard-teacher" style="color:#2c5282;font-size:18px;"></i>
+                            <div class="teacher-info">
+                                <div class="t-name">👩‍🏫 ${teacher.name}</div>
+                                <div class="t-id">${teacher.id_number||teacher.idNumber}</div>
+                            </div>
+                            <button class="btn-remove-teacher" onclick="removeClubTeacher('${cid}')">
+                                <i class="fas fa-user-minus"></i> Remove
+                            </button>
+                        </div>`
+                    : `<div class="club-teacher-row" style="border:2px dashed #e0e0e0;background:#fafafa;">
+                            <i class="fas fa-user-slash" style="color:#bbb;font-size:18px;"></i>
+                            <div class="teacher-info">
+                                <div class="t-name" style="color:#aaa;">No teacher assigned</div>
+                            </div>
+                        </div>`;
+
+                const teacherOptions = teachers.map(t => {
+                    const tid = t.id_number || t.idNumber;
+                    return `<option value="${tid}">${t.name} (${tid})</option>`;
+                }).join('');
+
+                return `
+                <div class="club-mgmt-card">
+                    <div class="club-mgmt-header">
+                        <div class="club-mgmt-icon ${cid}"><i class="fas ${club.icon}"></i></div>
+                        <div>
+                            <div class="club-mgmt-name">${club.name}</div>
+                            <div class="club-mgmt-sub">${club.tag}</div>
+                        </div>
+                    </div>
+                    ${teacherBlock}
+                    <div class="clubs-member-count" style="margin-bottom:14px;">
+                        <i class="fas fa-users" style="color:#2c5282;"></i>
+                        ${memberCount} member${memberCount!==1?'s':''}
+                    </div>
+                    ${teachers.length > 0 ? `
+                    <div style="display:flex;gap:8px;">
+                        <select id="teacherSel_${cid}" style="flex:1;padding:8px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;">
+                            <option value="">-- Select Teacher --</option>
+                            ${teacherOptions}
+                        </select>
+                        <button class="btn-assign-teacher" onclick="assignClubTeacher('${cid}')">
+                            <i class="fas fa-user-plus"></i> Assign
+                        </button>
+                    </div>` : '<p style="font-size:12px;color:#aaa;">No teachers registered yet.</p>'}
+                </div>`;
+            }).join('');
+        }
+
+        async function assignClubTeacher(clubId) {
+            const sel = document.getElementById('teacherSel_' + clubId);
+            if (!sel || !sel.value) { alert('Please select a teacher first.'); return; }
+            try {
+                await DB.assignClubTeacher(clubId, sel.value);
+                showToast('green', '✅ Teacher assigned to club!');
+                await renderClubsMgmt();
+            } catch(e) { alert('Failed: ' + e.message); }
+        }
+
+        async function removeClubTeacher(clubId) {
+            if (!confirm('Remove teacher from this club?')) return;
+            try {
+                await DB.removeClubTeacher(clubId);
+                showToast('red', 'Teacher removed from club.');
+                await renderClubsMgmt();
+            } catch(e) { alert('Failed: ' + e.message); }
+        }
+
+        /* ── Toast ── */
+        function showToast(color, msg) {
+            const t = document.getElementById('adminToast');
+            t.className = 'admin-toast ' + color;
+            document.getElementById('toastMsg').textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+
+        /* ══════════════════════════════
+           TEACHER ACCOUNT MANAGEMENT
+        ══════════════════════════════ */
+        let _lastGeneratedTeacher = null;
+
+        function openGenerateTeacherModal() {
+            document.getElementById('generateTeacherOverlay').classList.add('open');
+            gtGoStep(1);
+            document.getElementById('gtName').value = '';
+            document.getElementById('gtEmail').value = '';
+            showGtErr('');
+        }
+        function closeGenerateTeacherModal() {
+            document.getElementById('generateTeacherOverlay').classList.remove('open');
+        }
+        function gtGoStep(n) {
+            [1,2].forEach(i => {
+                const el = document.getElementById('gtStep'+i);
+                if (el) el.classList.toggle('active', i === n);
+            });
+        }
+        function showGtErr(msg) {
+            const el = document.getElementById('gtErr');
+            if (!el) return;
+            el.textContent = msg; el.classList.toggle('show', !!msg);
+        }
+
+        async function generateTeacherAccount() {
+            const name  = document.getElementById('gtName').value.trim();
+            const email = document.getElementById('gtEmail').value.trim().toLowerCase();
+            if (!name)  { showGtErr("Please enter the teacher's full name."); return; }
+            if (!email) { showGtErr("Please enter the teacher's email address."); return; }
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showGtErr('Please enter a valid email address.'); return; }
+            showGtErr('');
+            const btn = document.querySelector('#gtStep1 .fp-btn');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            try {
+                const existing = await DB.getUserByEmail(email);
+                if (existing) { showGtErr('This email is already registered.'); btn.disabled=false; btn.innerHTML='<i class="fas fa-magic"></i> Generate Account'; return; }
+                // Sequential teacher ID: T26-0000001, T26-0000002, gap-filling
+                const yy = String(new Date().getFullYear()).slice(2);
+                const prefix = 'T' + yy + '-';
+                const allUsers = await DB.getAllUsers ? await DB.getAllUsers() : _cachedUsers;
+                const usedNums = allUsers
+                    .filter(u => u.role === 'teacher' && u.id_number && u.id_number.startsWith(prefix))
+                    .map(u => parseInt(u.id_number.replace(prefix,''), 10))
+                    .filter(n => !isNaN(n))
+                    .sort((a,b) => a-b);
+                let nextNum = 1;
+                for (const n of usedNums) { if (n === nextNum) nextNum++; else break; }
+                const teacherId = prefix + String(nextNum).padStart(7, '0');
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+                let tempPwd = '';
+                for (let i = 0; i < 10; i++) tempPwd += chars[Math.floor(Math.random() * chars.length)];
+                await DB.createUser({ idNumber: teacherId, name, email, password: tempPwd, role: 'teacher', birthdate: null });
+                _lastGeneratedTeacher = { name, email, teacherId, tempPwd };
+                document.getElementById('gtCredentials').innerHTML =
+                    '<b>Name:</b> ' + name + '<br>' +
+                    '<b>Teacher ID:</b> ' + teacherId + '<br>' +
+                    '<b>Email:</b> ' + email + '<br>' +
+                    '<b>Password:</b> <span style="background:#fff;padding:2px 8px;border-radius:6px;border:1px solid #2c5282;letter-spacing:1px;">' + tempPwd + '</span>';
+                gtGoStep(2);
+                await renderTeacherAccounts();
+            } catch(e) {
+                showGtErr('Failed to generate account: ' + (e.message || e));
+                console.error(e);
+            }
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-magic"></i> Generate Account';
+        }
+
+        function copyTeacherCredentials() {
+            if (!_lastGeneratedTeacher) return;
+            const t = _lastGeneratedTeacher;
+            const text = 'ACT-CCS Teacher Account Credentials\n' +
+                '-----------------------------------\n' +
+                'Name:       ' + t.name + '\n' +
+                'Teacher ID: ' + t.teacherId + '\n' +
+                'Email:      ' + t.email + '\n' +
+                'Password:   ' + t.tempPwd + '\n' +
+                '-----------------------------------\n' +
+                'Login at the Teacher Portal. Update your profile after first login.';
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('gtCopyBtn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy Credentials'; }, 2000);
+            });
+        }
+
+        async function renderTeacherAccounts() {
+            const container = document.getElementById('teacherAccountsList');
+            if (!container) return;
+            try {
+                await getUsers();
+                const teachers = _cachedUsers.filter(function(u){ return u.role === 'teacher'; });
+                if (teachers.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:60px;color:#aaa">' +
+                        '<i class="fas fa-chalkboard-teacher" style="font-size:40px;margin-bottom:12px;display:block"></i>' +
+                        '<p style="font-size:15px">No teacher accounts yet.<br>Click <b>Generate Teacher Account</b> to create one.</p></div>';
+                    return;
+                }
+                window._teacherDataMap = {};
+                var cards = '';
+                teachers.forEach(function(t) {
+                    window._teacherDataMap[t.id_number] = t;
+                    var initials = t.name.split(' ').map(function(n){ return n[0]; }).join('').toUpperCase().slice(0,2);
+                    var joined = t.signup_date ? new Date(t.signup_date).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : 'N/A';
+                    var tfaColor = t.two_factor_auth ? '#27ae60' : '#aaa';
+                    var tfaLabel = t.two_factor_auth ? 'Enabled' : 'Disabled';
+                    var safeId   = t.id_number;
+                    var safeName = t.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                    cards += '<div data-tid="' + safeId + '" onclick="openTeacherInfoModal(this.dataset.tid)" class="teacher-card-clickable">';
+                    cards += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">';
+                    cards += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#2c5282,#0c82a0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">' + initials + '</div>';
+                    cards += '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;color:#1a1a2e">' + t.name + '</div><div style="font-size:12px;color:#888;margin-top:2px">' + t.id_number + '</div></div>';
+                    cards += '<span style="background:#e6f7f0;color:#27ae60;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0">TEACHER</span>';
+                    cards += '</div>';
+                    cards += '<div style="font-size:13px;color:#555;line-height:2;border-top:1px solid #f0f0f0;padding-top:12px">';
+                    cards += '<div><i class="fas fa-envelope" style="width:16px;color:#2c5282;margin-right:6px"></i>' + t.email + '</div>';
+                    cards += '<div><i class="fas fa-calendar-plus" style="width:16px;color:#2c5282;margin-right:6px"></i>Joined ' + joined + '</div>';
+                    cards += '<div><i class="fas fa-shield-alt" style="width:16px;margin-right:6px;color:' + tfaColor + '"></i>2FA: <span style="color:' + tfaColor + '">' + tfaLabel + '</span></div>';
+                    cards += '</div>';
+                    cards += '<button data-tid="' + safeId + '" data-tname="' + safeName + '" onclick="adminDeleteTeacher(this.dataset.tid,this.dataset.tname)" style="margin-top:14px;width:100%;padding:9px;background:#fee2e2;color:#b91c1c;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">';
+                    cards += '<i class="fas fa-trash"></i> Delete Account</button>';
+                    cards += '</div>';
+                });
+                container.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">' + cards + '</div>';
+            } catch(e) {
+                container.innerHTML = '<div style="color:#e53e3e;padding:20px">Failed to load teacher accounts.</div>';
+            }
+        }
+
+        async function adminDeleteTeacher(teacherId, name) {
+            if (!confirm('Delete teacher account for "' + name + '"?\n\nThis cannot be undone.')) return;
+            try {
+                await DB.deleteUser(teacherId);
+                showToast('green', 'Teacher account deleted.');
+                await renderTeacherAccounts();
+            } catch(e) { alert('Failed to delete teacher account.'); }
+        }
+
+
+        function openTeacherInfoModal(tid) {
+            const t = window._teacherDataMap && window._teacherDataMap[tid];
+            if (!t) return;
+            const initials = t.name.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2);
+            const joined = t.signup_date ? new Date(t.signup_date).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : 'N/A';
+            document.getElementById('tiAvatar').textContent  = initials;
+            document.getElementById('tiName').textContent    = t.name;
+            document.getElementById('tiId').textContent      = t.id_number;
+            document.getElementById('tiEmail').textContent   = t.email;
+            document.getElementById('tiJoined').textContent  = joined;
+            document.getElementById('ti2fa').innerHTML       = t.two_factor_auth ? '<span style="color:#27ae60;font-weight:600;">✅ Enabled</span>' : '<span style="color:#aaa;">Not Enabled</span>';
+            document.getElementById('tiVerified').innerHTML  = t.email_verified  ? '<span style="color:#27ae60;font-weight:600;">✅ Verified</span>'  : '<span style="color:#e67e22;">Not Verified</span>';
+            document.getElementById('tiCredId').textContent    = t.id_number;
+            document.getElementById('tiCredEmail').textContent = t.email;
+            window._viewingTeacher = t;
+            document.getElementById('teacherInfoOverlay').classList.add('open');
+        }
+        function closeTeacherInfoModal() {
+            document.getElementById('teacherInfoOverlay').classList.remove('open');
+        }
+        function copyTeacherInfoCredentials() {
+            const t = window._viewingTeacher;
+            if (!t) return;
+            const text = 'ACT-CCS Teacher Account\n' +
+                '----------------------------\n' +
+                'Name:       ' + t.name + '\n' +
+                'Teacher ID: ' + t.id_number + '\n' +
+                'Email:      ' + t.email + '\n' +
+                '----------------------------\n' +
+                'Login using your Teacher ID or Email at the Teacher Portal.';
+            navigator.clipboard.writeText(text).then(function() {
+                var btn = document.getElementById('tiCopyBtn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(function(){ btn.innerHTML = '<i class="fas fa-copy"></i> Copy Credentials'; }, 2000);
+            });
+        }
+
+        /* ── Init ── */
+        window.onload = async function () {
+            requireAdmin();
+            await refreshAll();
+            setInterval(refreshAll, 10000);
+        };
+    </script>
+
+    <!-- Teacher Info Modal -->
+    <div class="fp-overlay" id="teacherInfoOverlay">
+        <div class="fp-box" style="max-width:420px;">
+            <button class="fp-close" onclick="closeTeacherInfoModal()">&times;</button>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+                <div id="tiAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2c5282,#0c82a0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0;">T</div>
+                <div>
+                    <div id="tiName" style="font-weight:700;font-size:17px;color:#1a1a2e;"></div>
+                    <div id="tiId" style="font-size:12px;color:#888;margin-top:2px;"></div>
+                </div>
+            </div>
+            <div style="background:#f8fafc;border-radius:12px;padding:16px;font-size:13px;line-height:2.2;margin-bottom:16px;">
+                <div><span style="font-weight:600;color:#555;display:inline-block;width:90px;">Email:</span> <span id="tiEmail" style="color:#333;word-break:break-all;"></span></div>
+                <div><span style="font-weight:600;color:#555;display:inline-block;width:90px;">Joined:</span> <span id="tiJoined" style="color:#333;"></span></div>
+                <div><span style="font-weight:600;color:#555;display:inline-block;width:90px;">2FA:</span> <span id="ti2fa" style="color:#333;"></span></div>
+                <div><span style="font-weight:600;color:#555;display:inline-block;width:90px;">Email Verified:</span> <span id="tiVerified" style="color:#333;"></span></div>
+            </div>
+            <div style="background:#f0f4ff;border:2px dashed #2c5282;border-radius:12px;padding:16px;margin-bottom:16px;">
+                <div style="font-size:11px;font-weight:700;color:#2c5282;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Account Credentials</div>
+                <div style="font-family:monospace;font-size:13px;line-height:2;">
+                    <div><b>Teacher ID:</b> <span id="tiCredId"></span></div>
+                    <div><b>Email:</b> <span id="tiCredEmail"></span></div>
+                </div>
+                <div style="font-size:11px;color:#aaa;margin-top:6px;"><i class="fas fa-info-circle"></i> Password is hidden for security. Use Reset Password if needed.</div>
+            </div>
+            <button class="fp-btn" onclick="copyTeacherInfoCredentials()" id="tiCopyBtn"><i class="fas fa-copy"></i> Copy Credentials</button>
+            <button class="fp-btn-ghost" onclick="closeTeacherInfoModal()">Close</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login - ACT-CCS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="Student_login.css">
+    <style>
+/* ── Offline Banner ── */
+.offline-banner {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #e53e3e;
+    color: #fff;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 99999;
+    animation: slideDown .3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+.offline-banner.show { display: flex; align-items: center; justify-content: center; gap: 10px; }
+@keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+.offline-banner i { font-size: 18px; }
+.online-toast {
+    display: none;
+    position: fixed;
+    top: 20px; left: 50%; transform: translateX(-50%);
+    background: #27ae60;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 99999;
+    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    animation: popIn .3s ease;
+}
+.online-toast.show { display: flex; align-items: center; gap: 8px; }
+@keyframes popIn { from{transform:translateX(-50%) scale(.8);opacity:0} to{transform:translateX(-50%) scale(1);opacity:1} }
+
+/* ── Forgot Password Modal ── */
+.fp-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55); z-index: 10000;
+    align-items: center; justify-content: center;
+}
+.fp-overlay.open { display: flex; }
+.fp-box {
+    background: #fff; border-radius: 16px;
+    padding: 32px 28px; width: 100%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: fpPop .3s cubic-bezier(.22,.61,.36,1);
+    position: relative;
+}
+@keyframes fpPop { from{transform:scale(.88);opacity:0} to{transform:scale(1);opacity:1} }
+.fp-box h3 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+.fp-box p  { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.5; }
+.fp-step   { display: none; }
+.fp-step.active { display: block; }
+.fp-input  {
+    width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0;
+    border-radius: 10px; font-size: 14px; font-family: inherit;
+    transition: border-color .2s; box-sizing: border-box; margin-bottom: 12px;
+}
+.fp-input:focus { outline: none; border-color: #2c5282; }
+.fp-btn {
+    width: 100%; padding: 13px; border: none; border-radius: 10px;
+    background: linear-gradient(135deg, #2c5282, #0c82a0);
+    color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all .2s; margin-bottom: 8px;
+}
+.fp-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(44,82,130,.4); }
+.fp-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+.fp-btn-ghost {
+    width: 100%; padding: 10px; border: 2px solid #e0e0e0;
+    border-radius: 10px; background: transparent;
+    color: #888; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.fp-btn-ghost:hover { border-color: #2c5282; color: #2c5282; }
+.fp-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; font-size: 20px;
+    color: #bbb; cursor: pointer; line-height: 1;
+}
+.fp-close:hover { color: #555; }
+.fp-code-inputs { display: flex; gap: 10px; margin-bottom: 12px; justify-content: center; }
+.fp-code-inputs input {
+    width: 46px; height: 52px; text-align: center;
+    border: 2px solid #e0e0e0; border-radius: 10px;
+    font-size: 22px; font-weight: 700; color: #1a1a2e;
+    font-family: monospace; transition: border-color .2s;
+}
+.fp-code-inputs input:focus { outline: none; border-color: #2c5282; }
+.fp-error { color: #e53e3e; font-size: 12px; margin-bottom: 10px; display: none; }
+.fp-error.show { display: block; }
+.fp-success-icon { font-size: 48px; text-align: center; margin-bottom: 12px; }
+.fp-timer { font-size: 12px; color: #aaa; text-align: center; margin-bottom: 14px; }
+.fp-timer span { font-weight: 700; color: #e67e22; }
+.forgot-link {
+    display: block; text-align: right; margin-top: -4px; margin-bottom: 10px;
+    font-size: 12px; color: #0c82a0; cursor: pointer; font-weight: 600;
+    transition: color .2s;
+}
+.forgot-link:hover { color: #2c5282; text-decoration: underline; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+    <!-- Offline Banner -->
+    <div class="offline-banner" id="offlineBanner">
+        <i class="fas fa-wifi"></i>
+        <span>No internet connection. Please check your network and try again.</span>
+    </div>
+    <div class="online-toast" id="onlineToast">
+        <i class="fas fa-check-circle"></i> Back online!
+    </div>
+
+    <div class="form-container">
+        <div class="success-message" id="successMessage"></div>
+        <div class="role-badge"><i class="fas fa-user-graduate"></i> Student Portal</div>
+        <h2 id="form-title">LOGIN</h2>
+
+        <div class="form-wrapper">
+            <form class="login-form active" onsubmit="login(event)" id="loginForm">
+                <input type="text" id="loginId" placeholder="Student ID or Email Address" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <span class="forgot-link" onclick="openForgotPassword()"><i class="fas fa-key"></i> Forgot Password?</span>
+                <input type="submit" value="Login">
+            </form>
+            <form class="signup-form" onsubmit="signup(event)" id="signupForm">
+                <input type="text" id="signupName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Email Address" required>
+                <label for="signupBirthdate" style="display:block;text-align:left;font-size:12px;font-weight:600;color:#555;margin:6px 0 3px 2px;"><i class="fas fa-birthday-cake" style="color:#2c5282;margin-right:4px;"></i>Date of Birth</label>
+                <input type="date" id="signupBirthdate" required title="Birthdate" style="background:#cbd1d3;color:#000;padding:10px 15px;border:none;border-radius:4px;font-size:14px;width:100%;box-sizing:border-box;margin-bottom:8px;">
+                <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required minlength="6">
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required>
+                <div id="signupAgeDisplay" style="font-size:12px;color:#2c5282;margin-bottom:6px;display:none;"><i class="fas fa-birthday-cake"></i> Age: <span id="signupAge"></span></div>
+                <div id="signupErr" style="color:#e53e3e;font-size:12px;margin-bottom:6px;display:none;"></div>
+                <input type="submit" value="Sign Up">
+            </form>
+        </div>
+
+        <div class="toggle-link">
+            <p id="toggle-text">Don't have an account? <a onclick="toggleForm()">Sign Up</a></p>
+        </div>
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portal</a>
+    </div>
+    <script src="db.js"></script>
+    <script src="Student_login.js"></script>
+
+    <!-- ── Forgot Password Modal ── -->
+    <div class="fp-overlay" id="fpOverlay">
+        <div class="fp-box">
+            <button class="fp-close" onclick="closeForgotPassword()">&times;</button>
+
+            <!-- Step 1: Enter ID & Email -->
+            <div class="fp-step active" id="fpStep1">
+                <h3><i class="fas fa-key" style="color:#2c5282;margin-right:8px;"></i>Forgot Password</h3>
+                <p>Enter your Student ID and the email address you registered with. We'll send you a 6-digit reset code.</p>
+                <input class="fp-input" type="text" id="fpId" placeholder="Student ID Number" />
+                <input class="fp-input" type="email" id="fpEmail" placeholder="Registered Email" />
+                <div class="fp-error" id="fpErr1"></div>
+                <button class="fp-btn" id="fpSendBtn" onclick="fpSendCode()">
+                    <i class="fas fa-paper-plane"></i> Send Reset Code
+                </button>
+                <button class="fp-btn-ghost" onclick="closeForgotPassword()">Cancel</button>
+            </div>
+
+            <!-- Step 2: Enter Code -->
+            <div class="fp-step" id="fpStep2">
+                <h3><i class="fas fa-shield-alt" style="color:#2c5282;margin-right:8px;"></i>Enter Code</h3>
+                <p>We sent a 6-digit code to <strong id="fpEmailDisplay"></strong>. Enter it below.</p>
+                <div class="fp-code-inputs" id="fpCodeInputs">
+                    <input type="text" maxlength="1" inputmode="numeric" />
+                    <input type="text" maxlength="1" inputmode="numeric" />
+                    <input type="text" maxlength="1" inputmode="numeric" />
+                    <input type="text" maxlength="1" inputmode="numeric" />
+                    <input type="text" maxlength="1" inputmode="numeric" />
+                    <input type="text" maxlength="1" inputmode="numeric" />
+                </div>
+                <div class="fp-timer">Code expires in <span id="fpTimerDisplay">10:00</span></div>
+                <div class="fp-error" id="fpErr2"></div>
+                <button class="fp-btn" onclick="fpVerifyCode()">
+                    <i class="fas fa-check-circle"></i> Verify Code
+                </button>
+                <button class="fp-btn-ghost" onclick="fpResend()">Resend Code</button>
+            </div>
+
+            <!-- Step 3: New Password -->
+            <div class="fp-step" id="fpStep3">
+                <h3><i class="fas fa-lock" style="color:#2c5282;margin-right:8px;"></i>New Password</h3>
+                <p>Almost done! Set your new password below.</p>
+                <input class="fp-input" type="password" id="fpNewPass" placeholder="New Password (min 6 chars)" />
+                <input class="fp-input" type="password" id="fpConfirmPass" placeholder="Confirm New Password" />
+                <div class="fp-error" id="fpErr3"></div>
+                <button class="fp-btn" onclick="fpResetPassword()">
+                    <i class="fas fa-save"></i> Save New Password
+                </button>
+            </div>
+
+            <!-- Step 4: Done -->
+            <div class="fp-step" id="fpStep4">
+                <div class="fp-success-icon">🎉</div>
+                <h3 style="text-align:center;">Password Reset!</h3>
+                <p style="text-align:center;">Your password has been updated. You can now log in with your new password.</p>
+                <button class="fp-btn" onclick="closeForgotPassword()">
+                    <i class="fas fa-sign-in-alt"></i> Back to Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* ══════════════════════════════════════════
+       FORGOT PASSWORD — EmailJS flow
+       Service:  service_aqukwic
+       Template: template_1r7rcrf
+       PubKey:   ePQ8Q2EnmNzgyy85W
+    ══════════════════════════════════════════ */
+    // Init EmailJS once SDK is confirmed loaded
+    function ensureEmailJS() {
+        if (typeof emailjs !== 'undefined') {
+            emailjs.init('ePQ8Q2EnmNzgyy85W');
+        } else {
+            console.error('EmailJS SDK not loaded!');
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureEmailJS);
+    } else {
+        ensureEmailJS();
+    }
+
+    let _fpCode       = '';
+    let _fpUserId     = '';
+    let _fpTimerInt   = null;
+    let _fpTimerSecs  = 600;
+
+    function openForgotPassword() {
+        document.getElementById('fpOverlay').classList.add('open');
+        fpGoStep(1);
+    }
+    function closeForgotPassword() {
+        document.getElementById('fpOverlay').classList.remove('open');
+        clearInterval(_fpTimerInt);
+        _fpCode = ''; _fpUserId = '';
+        document.getElementById('fpId').value    = '';
+        document.getElementById('fpEmail').value = '';
+        document.getElementById('fpNewPass').value     = '';
+        document.getElementById('fpConfirmPass').value = '';
+        fpClearCodeInputs();
+    }
+    function fpGoStep(n) {
+        [1,2,3,4].forEach(i => {
+            document.getElementById('fpStep'+i).classList.toggle('active', i===n);
+        });
+        ['fpErr1','fpErr2','fpErr3'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el){ el.classList.remove('show'); el.textContent=''; }
+        });
+    }
+    function fpShowError(id, msg) {
+        const el = document.getElementById(id);
+        if(el){ el.textContent = msg; el.classList.add('show'); }
+    }
+
+    async function fpSendCode() {
+        const idVal    = document.getElementById('fpId').value.trim();
+        const emailVal = document.getElementById('fpEmail').value.trim().toLowerCase();
+        if (!idVal || !emailVal) { fpShowError('fpErr1','Please fill in both fields.'); return; }
+
+        const btn = document.getElementById('fpSendBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+        try {
+            // Look up user in Supabase
+            const user = await DB.getUser(idVal);
+            if (!user) { fpShowError('fpErr1','No account found with that ID.'); btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Send Reset Code'; return; }
+            const storedEmail = (user.email || '').toLowerCase();
+            if (storedEmail !== emailVal) { fpShowError('fpErr1','Email does not match our records.'); btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Send Reset Code'; return; }
+
+            _fpUserId = idVal;
+            _fpCode   = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // Send via EmailJS
+            if (typeof emailjs === 'undefined') throw new Error('EmailJS SDK not loaded. Check internet connection.');
+            await emailjs.send('service_aqukwic', 'template_1r7rcrf', {
+                to_name:    user.name,
+                to_email:   emailVal,
+                reset_code: _fpCode
+            });
+
+            document.getElementById('fpEmailDisplay').textContent = emailVal;
+            fpGoStep(2);
+            fpStartTimer();
+            btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Send Reset Code';
+        } catch(e) {
+            fpShowError('fpErr1', 'Failed to send email. Please try again.');
+            btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Send Reset Code';
+            console.error('EmailJS error:', e);
+        }
+    }
+
+    async function fpResend() {
+        clearInterval(_fpTimerInt);
+        fpClearCodeInputs();
+        await fpSendCode();
+        if (_fpCode) { fpGoStep(2); fpStartTimer(); }
+    }
+
+    function fpStartTimer() {
+        clearInterval(_fpTimerInt);
+        _fpTimerSecs = 600;
+        fpUpdateTimerDisplay();
+        _fpTimerInt = setInterval(() => {
+            _fpTimerSecs--;
+            fpUpdateTimerDisplay();
+            if (_fpTimerSecs <= 0) {
+                clearInterval(_fpTimerInt);
+                _fpCode = '';
+                fpShowError('fpErr2', 'Code expired. Please request a new one.');
+            }
+        }, 1000);
+    }
+    function fpUpdateTimerDisplay() {
+        const m = Math.floor(_fpTimerSecs / 60).toString().padStart(2,'0');
+        const s = (_fpTimerSecs % 60).toString().padStart(2,'0');
+        const el = document.getElementById('fpTimerDisplay');
+        if (el) el.textContent = m + ':' + s;
+    }
+
+    /* Code input boxes — auto-advance on digit entry */
+    document.addEventListener('DOMContentLoaded', () => {
+        const boxes = document.querySelectorAll('#fpCodeInputs input');
+        boxes.forEach((box, i) => {
+            box.addEventListener('input', () => {
+                box.value = box.value.replace(/[^0-9]/g,'');
+                if (box.value && i < boxes.length - 1) boxes[i+1].focus();
+            });
+            box.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
+            });
+            box.addEventListener('paste', e => {
+                e.preventDefault();
+                const digits = (e.clipboardData.getData('text')).replace(/[^0-9]/g,'').slice(0,6);
+                [...digits].forEach((d,j) => { if(boxes[j]) boxes[j].value = d; });
+                if(boxes[Math.min(digits.length, boxes.length-1)]) boxes[Math.min(digits.length, boxes.length-1)].focus();
+            });
+        });
+    });
+
+    function fpClearCodeInputs() {
+        document.querySelectorAll('#fpCodeInputs input').forEach(b => b.value = '');
+    }
+    function fpGetEnteredCode() {
+        return [...document.querySelectorAll('#fpCodeInputs input')].map(b => b.value).join('');
+    }
+
+    function fpVerifyCode() {
+        const entered = fpGetEnteredCode();
+        if (entered.length < 6) { fpShowError('fpErr2','Please enter all 6 digits.'); return; }
+        if (!_fpCode)            { fpShowError('fpErr2','Code expired. Please request a new one.'); return; }
+        if (entered !== _fpCode) { fpShowError('fpErr2','Incorrect code. Please try again.'); fpClearCodeInputs(); return; }
+        clearInterval(_fpTimerInt);
+        fpGoStep(3);
+    }
+
+    async function fpResetPassword() {
+        const np = document.getElementById('fpNewPass').value;
+        const cp = document.getElementById('fpConfirmPass').value;
+        if (np.length < 6)  { fpShowError('fpErr3','Password must be at least 6 characters.'); return; }
+        if (np !== cp)       { fpShowError('fpErr3','Passwords do not match.'); return; }
+        try {
+            await DB.updateUserPassword(_fpUserId, np);
+            fpGoStep(4);
+        } catch(e) {
+            fpShowError('fpErr3', 'Failed to update password. Please try again.');
+        }
+    }
+
+    // Close on backdrop click
+    document.getElementById('fpOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeForgotPassword();
+    });
+    </script>
+
+</body>
+</html>
