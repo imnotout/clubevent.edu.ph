@@ -593,7 +593,6 @@ let events = [];
             document.getElementById('attYearLevel').value = '';
             document.getElementById('attProgram').value = '';
             document.getElementById('attCondition').value = 'present';
-            document.getElementById('attRemarks').value = '';
             document.getElementById('attModal').dataset.eventId = eventId;
             document.getElementById('attModal').dataset.sessionDay = getTodayStr();
             document.getElementById('attModal').style.display = 'flex';
@@ -686,15 +685,12 @@ let events = [];
             const yearLevel = document.getElementById('attYearLevel').value;
             const program   = document.getElementById('attProgram').value;
             const condition = document.getElementById('attCondition').value || 'present';
-            const remarks   = document.getElementById('attRemarks').value.trim();
             if (!yearLevel || !program) { alert('Please fill in all required fields.'); return; }
 
-            // For multi-day events, the unique key is (event_id, student_id, session_day)
-            // We store session_day in remarks prefix if needed, or use a composite approach
             const record = {
                 eventId, studentId: currentUser.idNumber, studentName: currentUser.name,
                 yearLevel, program, condition,
-                remarks: (remarks ? remarks : '') + (remarks ? ' ' : '') + '[Day:' + sessionDay + ']',
+                remarks: '[Day:' + sessionDay + ']',
                 submittedAt: new Date().toISOString()
             };
             clearInterval(_attTimerInt);

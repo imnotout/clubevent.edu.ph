@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - ACT-CCS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy: #020152;
+            --blue: #2c5282;
+            --blue-dark: #1a365d;
+            --gold: #ffd700;
+            --orange: #ff751a;
+            --teal: #0c82a0;
+            --light: #f5f7fa;
+            --white: #ffffff;
+            --muted: #666;
+            --border: #e8ecf0;
+            --danger: #e74c3c;
+            --success: #22c55e;
+        }
+
+        body { font-family: 'Open Sans', sans-serif; background: var(--light); color: #333; min-height: 100vh; }
+
+        /* ── TOP BAR ── */
+        .top-bar { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color: var(--gold); padding: 8px 0; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600; text-align: right; }
+        .top-bar-content { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+
+        /* ── HEADER ── */
+        header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header-content { max-width: 1400px; margin: 0 auto; padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .logo-section img { width: 80px; height: 80px; object-fit: contain; }
+        .institution-info { flex: 1; text-align: center; }
+        .institution-info .subtitle { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+        .institution-info h1 { font-family: 'Montserrat', sans-serif; font-size: 34px; color: var(--teal); margin: 6px 0; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+        .institution-info .accreditation { font-family: 'Montserrat', sans-serif; font-size: 16px; color: var(--orange); font-weight: 700; }
+
+        /* ── NAV ── */
+        nav { background: var(--navy); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        .nav-content ul { list-style: none; display: flex; flex-wrap: wrap; }
+        .nav-content li { position: relative; }
+        .nav-content a { display: block; padding: 15px 22px; color: #fff; text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+        .nav-content a:hover { background: #1c029b; color: var(--gold); }
+        .nav-content a.active { background: var(--gold); color: var(--navy); font-weight: 700; }
+        .dropdown-content { display: none; position: absolute; background: #fff; min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); top: 100%; left: 0; z-index: 999; }
+        .dropdown-content a { color: #333; padding: 11px 18px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .dropdown-content a:hover { background: #f5f5f5; color: var(--navy); }
+        .nav-content li:hover .dropdown-content { display: block; }
+
+        /* Profile nav */
+        .user-profile { position: relative; display: flex; align-items: center; margin-right: 20px; }
+        .profile-trigger { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 15px; border-radius: 25px; transition: background 0.3s; }
+        .profile-trigger:hover { background: rgba(255,255,255,0.1); }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #ffed4e); color: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; }
+        .profile-name { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--gold); font-size: 13px; }
+        .profile-id { font-size: 11px; color: rgba(255,255,255,0.7); }
+        .profile-info { display: flex; flex-direction: column; align-items: flex-start; }
+        .profile-dropdown { position: absolute; top: 100%; right: 0; margin-top: 10px; background: white; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); min-width: 220px; display: none; z-index: 1000; }
+        .profile-dropdown.show { display: block; animation: dropFade 0.25s ease; }
+        @keyframes dropFade { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: translateY(0); } }
+        .dropdown-header { padding: 20px; border-bottom: 1px solid #f0f0f0; text-align: center; }
+        .dropdown-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color: white; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; margin: 0 auto 10px; }
+        .dropdown-name { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--blue); font-size: 14px; margin-bottom: 3px; }
+        .dropdown-email { font-size: 12px; color: #666; }
+        .dropdown-menu { padding: 10px 0; }
+        .dropdown-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #333; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 500; transition: background 0.2s; cursor: pointer; }
+        .dropdown-item:hover { background: #f5f5f5; }
+        .dropdown-item i { width: 20px; color: var(--blue); }
+        .dropdown-divider { height: 1px; background: #f0f0f0; margin: 5px 0; }
+        .dropdown-item.logout { color: var(--danger); }
+        .dropdown-item.logout i { color: var(--danger); }
+        .font { color: var(--navy); }
+
+        /* ── SETTINGS LAYOUT ── */
+        .settings-wrapper { max-width: 1100px; margin: 40px auto 60px; padding: 0 20px; display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; }
+
+        /* Sidebar */
+        .settings-sidebar { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); overflow: hidden; position: sticky; top: 80px; }
+        .sidebar-header { background: linear-gradient(135deg, var(--navy), var(--blue)); padding: 24px 20px; }
+        .sidebar-header h3 { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: white; margin-bottom: 4px; }
+        .sidebar-header p { font-size: 12px; color: rgba(255,255,255,0.6); }
+        .sidebar-nav { padding: 10px 0; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 13px 20px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600; color: var(--muted); }
+        .sidebar-item:hover { background: #f8f9fa; color: var(--blue); border-left-color: var(--border); }
+        .sidebar-item.active { background: #f0f7ff; color: var(--blue); border-left-color: var(--teal); }
+        .sidebar-item i { width: 18px; font-size: 15px; }
+        .sidebar-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+        /* Main content */
+        .settings-main { display: flex; flex-direction: column; gap: 24px; }
+
+        .settings-section { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); overflow: hidden; display: none; }
+        .settings-section.active { display: block; animation: fadeSlide 0.3s ease; }
+        @keyframes fadeSlide { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+        .section-header { padding: 22px 28px; border-bottom: 2px solid var(--light); display: flex; align-items: center; gap: 12px; }
+        .section-header-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .section-header-icon.profile-icon { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); }
+        .section-header-icon.notif-icon   { background: linear-gradient(135deg, var(--teal), #0099c6); }
+        .section-header-icon.privacy-icon { background: linear-gradient(135deg, #43a047, #66bb6a); }
+        .section-header-icon.appear-icon  { background: linear-gradient(135deg, #9c27b0, #673ab7); }
+        .section-header-icon.security-icon{ background: linear-gradient(135deg, var(--orange), #ff9f55); }
+        .section-header-icon.account-icon { background: linear-gradient(135deg, var(--danger), #ff6b6b); }
+        .section-title { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; color: var(--blue-dark); }
+        .section-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        .section-body { padding: 28px; }
+
+        /* Form elements */
+        .form-group { margin-bottom: 22px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label { display: block; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; color: var(--blue-dark); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; font-family: 'Open Sans', sans-serif; font-size: 14px; color: #333; transition: border-color 0.3s, box-shadow 0.3s; background: #fafafa; }
+        .form-input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 4px rgba(12,130,160,0.1); background: white; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-hint { font-size: 12px; color: #aaa; margin-top: 5px; }
+
+        /* Toggle switch */
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--light); }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-info { flex: 1; }
+        .toggle-title { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
+        .toggle-desc { font-size: 12px; color: var(--muted); }
+        .toggle-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; margin-left: 20px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; background: #ddd; border-radius: 26px; cursor: pointer; transition: background 0.3s; }
+        .toggle-slider::before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+        .toggle-switch input:checked + .toggle-slider { background: var(--teal); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+        /* Radio options */
+        .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        .radio-card { flex: 1; min-width: 100px; border: 2px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.25s; text-align: center; }
+        .radio-card:hover { border-color: var(--teal); }
+        .radio-card.selected { border-color: var(--teal); background: #f0f9fb; }
+        .radio-card i { font-size: 22px; margin-bottom: 8px; color: var(--muted); display: block; }
+        .radio-card.selected i { color: var(--teal); }
+        .radio-card span { font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted); }
+        .radio-card.selected span { color: var(--teal); }
+
+        /* Save button */
+        .save-btn { padding: 13px 30px; background: linear-gradient(135deg, var(--navy), var(--blue)); color: white; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(44,82,130,0.35); }
+        .save-btn:active { transform: translateY(0); }
+        .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+        .cancel-btn { padding: 13px 24px; background: transparent; border: 2px solid var(--border); border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+        .cancel-btn:hover { border-color: var(--muted); color: #333; }
+
+        /* Danger zone */
+        .danger-zone { border: 2px solid #fde8e8; border-radius: 12px; padding: 22px; background: #fff8f8; }
+        .danger-zone h4 { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; color: var(--danger); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .danger-zone p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+        .danger-btn { padding: 11px 22px; background: transparent; border: 2px solid var(--danger); border-radius: 10px; color: var(--danger); font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .danger-btn:hover { background: var(--danger); color: white; }
+
+        /* Password strength */
+        .strength-bar { height: 6px; border-radius: 3px; background: var(--border); margin-top: 8px; overflow: hidden; }
+        .strength-fill { height: 100%; width: 0; border-radius: 3px; transition: width 0.4s, background 0.4s; }
+        .strength-label { font-size: 11px; margin-top: 4px; font-weight: 600; font-family: 'Montserrat', sans-serif; }
+
+        /* Avatar section */
+        .avatar-section { display: flex; align-items: center; gap: 24px; margin-bottom: 28px; padding-bottom: 28px; border-bottom: 2px solid var(--light); }
+        .big-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color: white; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 800; flex-shrink: 0; }
+        .avatar-actions h4 { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; color: var(--blue-dark); margin-bottom: 6px; }
+        .avatar-actions p { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+        .avatar-btn { padding: 9px 18px; border: 2px solid var(--blue); border-radius: 8px; background: transparent; color: var(--blue); font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-right: 8px; }
+        .avatar-btn:hover { background: var(--blue); color: white; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 30px; right: 30px; background: var(--success); color: white; padding: 14px 22px; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; transform: translateY(80px); opacity: 0; transition: all 0.4s ease; z-index: 9999; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        @media (max-width: 860px) {
+            .settings-wrapper { grid-template-columns: 1fr; }
+            .settings-sidebar { position: static; }
+            .sidebar-nav { display: flex; overflow-x: auto; padding: 8px; gap: 4px; }
+            .sidebar-item { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; border-radius: 8px; padding: 10px 14px; }
+            .sidebar-item.active { border-bottom-color: var(--teal); }
+            .sidebar-divider { display: none; }
+            .form-row { grid-template-columns: 1fr; }
+            .header-content { flex-direction: column; text-align: center; gap: 10px; }
+            .institution-info h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <div class="top-bar-content">Admissions Open for 2024–2026 | Apply Now!</div>
+</div>
+
+<!-- Header -->
+<header>
+    <div class="header-content">
+        <div class="logo-section"><img src="Pictures/Logo.jpg" alt="ACT Logo"></div>
+        <div class="institution-info">
+            <p class="subtitle">A Unit of Asian Technology Trust®</p>
+            <h1>Asian College Technology</h1>
+            <p class="accreditation">Approved By ACT And CCS</p>
+        </div>
+        <div class="logo-section"><img src="Pictures/ACTLogo.png" alt="ACT Logo 2"></div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav>
+    <div class="nav-content" id="navMenu">
+        <ul>
+            <li><a href="Page(Main2).html">Home</a></li>
+            <li><a href="Events.html">Event</a></li>
+            <li>
+                <a href="#">Information <i class="fas fa-caret-down"></i></a>
+                <div class="dropdown-content">
+                    <a href="updates.html">Updates</a>
+                    <a href="calendar.html">Calendar</a>
+                </div>
+            </li>
+            <li>
+                <a href="#">Program <i class="fas fa-caret-down"></i></a>
+                <div class="dropdown-content">
+                    <a href="cse.html">BSIT</a>
+                    <a href="ise.html">BSCS</a>
+                    <a href="ise.html">BSCpE</a>
+                    <a href="ise.html">ACT-MM</a>
+                    <a href="ise.html">ACT-AD</a>
+                </div>
+            </li>
+            <li>
+                <a href="#">Campus Life <i class="fas fa-caret-down"></i></a>
+                <div class="dropdown-content">
+                    <a href="tap.html">Training &amp; Placements</a>
+                    <a href="login.html">Sports</a>
+                    <a href="register.html">Gallery</a>
+                    <a href="#">Facilities</a>
+                </div>
+            </li>
+            <li><a href="commitee.html">Committee</a></li>
+            <li><a href="Member.html">Members</a></li>
+            <li><a href="Contact.html">Contact</a></li>
+            <li><a href="#about">About</a></li>
+        </ul>
+        <div class="user-profile">
+            <div class="profile-trigger" onclick="toggleProfileDropdown()">
+                <div class="profile-avatar" id="profileAvatar">U</div>
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName">Guest User</div>
+                    <div class="profile-id" id="profileId">Not logged in</div>
+                </div>
+                <i class="fas fa-chevron-down" style="color:rgba(255,255,255,0.7);font-size:12px;"></i>
+            </div>
+            <div class="profile-dropdown" id="profileDropdown">
+                <div class="dropdown-header">
+                    <div class="dropdown-avatar" id="dropdownAvatar">U</div>
+                    <div class="dropdown-name" id="dropdownName">Guest User</div>
+                    <div class="dropdown-email" id="dropdownEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e495b4b5d5a6e4b564f435e424b004d4143">[email&#160;protected]</a></div>
+                </div>
+                <div class="dropdown-menu">
+                    <a href="profile.html" class="dropdown-item"><i class="fas fa-user"></i><span class="font">My Profile</span></a>
+                    <a href="settings.html" class="dropdown-item"><i class="fas fa-cog" style="color:var(--teal)"></i><span class="font" style="color:var(--teal);font-weight:700;">Settings</span></a>
+                    <a href="notifications.html" class="dropdown-item"><i class="fas fa-bell"></i><span class="font">Notifications</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="window.open('login&SignUp.html')"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Settings Layout -->
+<div class="settings-wrapper">
+
+    <!-- Sidebar -->
+    <div class="settings-sidebar">
+        <div class="sidebar-header">
+            <h3>Settings</h3>
+            <p>Manage your preferences</p>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-item active" onclick="showSection('profile', this)">
+                <i class="fas fa-user-circle"></i> Profile
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-item" onclick="showSection('notifications', this)">
+                <i class="fas fa-bell"></i> Notifications
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-item" onclick="showSection('security', this)">
+                <i class="fas fa-lock"></i> Security
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-item" onclick="showSection('privacy', this)">
+                <i class="fas fa-shield-alt"></i> Privacy
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Sections -->
+    <div class="settings-main">
+
+        <!-- ── PROFILE ── -->
+        <div class="settings-section active" id="section-profile">
+            <div class="section-header">
+                <div class="section-header-icon profile-icon"><i class="fas fa-user-circle"></i></div>
+                <div>
+                    <div class="section-title">Profile Information</div>
+                    <div class="section-subtitle">Update your personal details and photo</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="avatar-section">
+                    <div class="big-avatar" id="bigAvatar">U</div>
+                    <div class="avatar-actions">
+                        <h4>Profile Photo</h4>
+                        <p>Upload a JPG or PNG image. Max size 2MB.</p>
+                        <button class="avatar-btn"><i class="fas fa-upload"></i> Upload Photo</button>
+                        <button class="avatar-btn" style="border-color:#e74c3c;color:#e74c3c;" onmouseover="this.style.background='#e74c3c';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e74c3c'">Remove</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-input" id="firstName" placeholder="Juan">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-input" id="lastName" placeholder="Dela Cruz">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Student / Staff ID</label>
+                        <input type="text" class="form-input" id="studentId" placeholder="21-2003182">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Program</label>
+                        <select class="form-input">
+                            <option>BSIT</option>
+                            <option>BSCS</option>
+                            <option>BSCpE</option>
+                            <option>ACT-MM</option>
+                            <option>ACT-AD</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" id="emailInput" placeholder="juan@act.edu.ph">
+                    <div class="form-hint">This is your login email. Contact the registrar to change it.</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-input" placeholder="+63 9XX XXX XXXX">
+                </div>
+                <div class="btn-row">
+                    <button class="save-btn" onclick="saveSettings()"><i class="fas fa-save"></i> Save Changes</button>
+                    <button class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── NOTIFICATIONS ── -->
+        <div class="settings-section" id="section-notifications">
+            <div class="section-header">
+                <div class="section-header-icon notif-icon"><i class="fas fa-bell"></i></div>
+                <div>
+                    <div class="section-title">Notification Preferences</div>
+                    <div class="section-subtitle">Choose what you want to be notified about</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Event Announcements</div>
+                        <div class="toggle-desc">Get notified when new events are added or updated</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Academic Reminders</div>
+                        <div class="toggle-desc">Enrollment periods, exam schedules, and deadlines</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Cultural Events</div>
+                        <div class="toggle-desc">Notifications about cultural activities and programs</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Event Reminders</div>
+                        <div class="toggle-desc">Reminders 3 days before events you're registered for</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">System Notifications</div>
+                        <div class="toggle-desc">Maintenance windows and system announcements</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Email Notifications</div>
+                        <div class="toggle-desc">Also receive notifications in your email inbox</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="btn-row">
+                    <button class="save-btn" onclick="saveSettings()"><i class="fas fa-save"></i> Save Preferences</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SECURITY ── -->
+        <div class="settings-section" id="section-security">
+            <div class="section-header">
+                <div class="section-header-icon security-icon"><i class="fas fa-lock"></i></div>
+                <div>
+                    <div class="section-title">Security Settings</div>
+                    <div class="section-subtitle">Manage your password and login security</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-input" placeholder="Enter current password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-input" id="newPassword" placeholder="Enter new password" oninput="checkStrength(this.value)">
+                    <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                    <div class="strength-label" id="strengthLabel" style="color:#aaa;">Enter a password</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-input" placeholder="Re-enter new password">
+                    <div class="form-hint">Use at least 8 characters with a mix of letters, numbers, and symbols.</div>
+                </div>
+                <div class="toggle-row" style="margin-top:10px;">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Two-Factor Authentication</div>
+                        <div class="toggle-desc">Add an extra layer of security to your account</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Login Alerts</div>
+                        <div class="toggle-desc">Receive an email when a new device logs into your account</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="btn-row">
+                    <button class="save-btn" onclick="saveSettings()"><i class="fas fa-lock"></i> Update Password</button>
+                    <button class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ── PRIVACY ── -->
+        <div class="settings-section" id="section-privacy">
+            <div class="section-header">
+                <div class="section-header-icon privacy-icon"><i class="fas fa-shield-alt"></i></div>
+                <div>
+                    <div class="section-title">Privacy Settings</div>
+                    <div class="section-subtitle">Control your data and visibility</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Show Profile to Other Students</div>
+                        <div class="toggle-desc">Allow other students to view your name and program</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Show Email Address</div>
+                        <div class="toggle-desc">Display your email on your public profile</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Activity Visibility</div>
+                        <div class="toggle-desc">Let others see your event participation history</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Data Analytics</div>
+                        <div class="toggle-desc">Allow the college to use anonymized usage data to improve the portal</div>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="btn-row">
+                    <button class="save-btn" onclick="saveSettings()"><i class="fas fa-shield-alt"></i> Save Privacy</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div><!-- end settings-main -->
+</div><!-- end settings-wrapper -->
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Settings saved successfully!</span></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    function showSection(id, el) {
+        document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + id).classList.add('active');
+        el.classList.add('active');
+    }
+
+    function saveSettings() {
+        showToast('Settings saved successfully!');
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toastMsg').textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    function selectRadio(el, group) {
+        el.closest('.radio-group').querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    function checkStrength(val) {
+        const fill  = document.getElementById('strengthFill');
+        const label = document.getElementById('strengthLabel');
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+        const levels = [
+            { w: '0%',   color: '#ddd',    text: 'Enter a password', textColor: '#aaa' },
+            { w: '25%',  color: '#e74c3c', text: 'Weak',    textColor: '#e74c3c' },
+            { w: '50%',  color: '#ff751a', text: 'Fair',    textColor: '#ff751a' },
+            { w: '75%',  color: '#ffd700', text: 'Good',    textColor: '#e6a800' },
+            { w: '100%', color: '#22c55e', text: 'Strong',  textColor: '#22c55e' },
+        ];
+        const lvl = val.length === 0 ? levels[0] : levels[score];
+        fill.style.width    = lvl.w;
+        fill.style.background = lvl.color;
+        label.textContent   = lvl.text;
+        label.style.color   = lvl.textColor;
+    }
+
+    function confirmAction(type) {
+        const msg = type === 'delete'
+            ? 'Are you sure you want to permanently DELETE your account? This cannot be undone.'
+            : 'Are you sure you want to deactivate your account?';
+        if (confirm(msg)) showToast(type === 'delete' ? 'Account deletion requested.' : 'Account deactivated.');
+    }
+
+    // Profile dropdown
+    function toggleProfileDropdown() {
+        document.getElementById('profileDropdown').classList.toggle('show');
+    }
+    document.addEventListener('click', function(e) {
+        const p = document.querySelector('.user-profile');
+        if (p && !p.contains(e.target)) document.getElementById('profileDropdown').classList.remove('show');
+    });
+
+    // Load user data
+    function loadUserData() {
+        const u = localStorage.getItem('currentUser');
+        if (u) {
+            const user = JSON.parse(u);
+            const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('profileAvatar').textContent  = initials;
+            document.getElementById('profileName').textContent    = user.name;
+            document.getElementById('profileId').textContent      = 'ID: ' + user.idNumber;
+            document.getElementById('dropdownAvatar').textContent = initials;
+            document.getElementById('dropdownName').textContent   = user.name;
+            document.getElementById('dropdownEmail').textContent  = user.email;
+            document.getElementById('bigAvatar').textContent      = initials;
+            const parts = user.name.split(' ');
+            if (parts[0]) document.getElementById('firstName').value = parts[0];
+            if (parts[1]) document.getElementById('lastName').value  = parts.slice(1).join(' ');
+            if (user.idNumber
